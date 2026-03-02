@@ -9,7 +9,7 @@ Parse SHACL RDF
 ↓
 Validate Constraints
 ↓
-Normalize Models
+Normalize Models (transform parsed + validated SHACL RDF structures into a consistent, generator-friendly internal representation)
 ↓
 Generate TypeScript Classes
 ```
