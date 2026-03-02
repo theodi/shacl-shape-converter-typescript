@@ -1,17 +1,10 @@
-import { ShapePropertyModel } from "../model/shacl-model.js"
-import { interpretCardinality } from "../utils/cardinality.js"
 import { generatePropertyType } from "./type-generator.js"
 
-import { TermMapping, ValueMapping } from "rdfjs-wrapper"
+import { ShapePropertyModel } from "../model/shacl-model.js";
 
 export class PropertyGenerator {
 
   generateProperty(prop: ShapePropertyModel): string {
-
-    const cardinality = interpretCardinality(
-      prop.minCount,
-      prop.maxCount
-    )
 
     const baseType = this.inferType(prop)
 
@@ -26,7 +19,7 @@ export class PropertyGenerator {
     // MULTI VALUE PROPERTY
     // --------------------------------------------------
 
-    if (cardinality.multiple) {
+    if (prop.cardinality.multiple) {
 
       return `
   get ${identifier}(): Set<${baseType}> {
@@ -69,7 +62,7 @@ export class PropertyGenerator {
     // SINGLE VALUE PROPERTY
     // --------------------------------------------------
 
-    const returnType = generatePropertyType(baseType, cardinality)
+    const returnType = generatePropertyType(baseType, prop.cardinality)
 
     return `
   get ${identifier}(): ${returnType} | undefined {

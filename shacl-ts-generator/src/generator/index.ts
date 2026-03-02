@@ -21,8 +21,6 @@ export async function generateFromShacl(
   
   for (const shape of shapes) {
 
-    shape.name = NamingUtils.toClassName(shape.codeIdentifier)
-
     const classCode = classGenerator.generate(shape)
 
     await fs.writeFile(
@@ -31,7 +29,7 @@ export async function generateFromShacl(
     )
   }
 
-  const indexCode = shapes
+  const indexCode = [...shapes]
     .map(s => `export * from "./${s.name}"`)
     .join("\n")
 
