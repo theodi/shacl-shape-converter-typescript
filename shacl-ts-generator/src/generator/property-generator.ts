@@ -19,14 +19,8 @@ export class PropertyGenerator {
     if (prop.cardinality.multiple) {
 
       return `
-  get ${identifier}(): Set<${baseType}> {
-    const values = new Set<${baseType}>()
-
-    for (const value of this.objects("${path}", ${mapping}, TermMapping.stringToLiteral)) {
-      values.add(value as ${baseType})
-    }
-
-    return values
+  get ${identifier}(): Set<string> {
+    return this.objects("${path}", ${mapping}, TermMapping.stringToLiteral)
   }
 
   add${capitalized}(value: ${baseType}) {
@@ -54,7 +48,8 @@ export class PropertyGenerator {
 
   set ${identifier}(value: ${baseType} | undefined) {
     this.overwriteNullable("${path}", value, TermMapping.${this.termMapping(baseType)})
-  }`
+  }
+`
   }
 
   // --------------------------------------------------

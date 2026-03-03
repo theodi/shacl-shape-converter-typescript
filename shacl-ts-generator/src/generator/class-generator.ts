@@ -18,11 +18,9 @@ export class ClassGenerator {
       .join("\n")
 
     return `
-import { TermWrapper } from "rdfjs-wrapper"
-import { ValueMapping, TermMapping } from "rdfjs-wrapper"
+import { ValueMapping, TermMapping, TermWrapper, ObjectMapping } from "rdfjs-wrapper"
 
 export class ${shape.name} extends TermWrapper {
-
 ${properties}
 }
 `
