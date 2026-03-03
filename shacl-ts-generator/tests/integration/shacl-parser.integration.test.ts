@@ -18,7 +18,7 @@ describe("ShaclParser integration", () => {
 
     const shape = shapes[0]
 
-    expect(shape.properties.length).toBe(2)
+    expect(shape.properties.size).toBe(2)
     expect(shape.codeIdentifier).toBe("Person")
   })
 

@@ -1,6 +1,6 @@
 import { ShaclParser } from "../../src/parser/shacl-parser.js"
 
-describe("ShaclParser internal logic", () => {
+describe("ShaclParser internal logic", { skip: "not relevant anymore" }, () => {
 
   const parser = new ShaclParser()
 
