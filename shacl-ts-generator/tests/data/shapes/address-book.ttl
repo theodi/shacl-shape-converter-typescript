@@ -25,8 +25,9 @@ address-book-shape:AddressBookShape a sh:NodeShape ;
         rdfs:label "Formatted name";
         sh:path vcard:fn ;
         sh:datatype xsd:string;
-        sh:minCount 1;
+        sh:minCount 1; 
         sh:codeIdentifier "formattedName";
+         
   ];
   sh:property [
     rdfs:label "Name Email Index" ; 
