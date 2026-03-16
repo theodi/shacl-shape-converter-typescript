@@ -53,21 +53,21 @@ export class PropertyGenerator {
     const singularMethod = prop.cardinality.required && !prop.cardinality.multiple ? "singular" : "singularNullable";
     const setterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "overwrite" : "overwriteNullable";
 
-  return `
-  get ${identifier}(): ${returnType} {
-    return this.${singularMethod}(
-      "${path}", 
-      ${mapping}
+    return `
+    get ${identifier}(): ${returnType} {
+      return this.${prop.cardinality.required && !prop.cardinality.multiple ? 'singular' : 'singularNullable'}(
+        "${path}",
+        ${mapping}
       );
-  }
-  set ${identifier}(value: ${baseType}) {
-    this.${setterMethod}(
-      "${path}", 
-      value, 
-      TermMapping.${this.termMapping(baseType, prop)}
+    }
+    set ${identifier}(value: ${baseType}) {
+      this.${prop.cardinality.required && !prop.cardinality.multiple ? 'overwrite' : 'overwriteNullable'}(
+        "${path}",
+        value,
+        TermMapping.${this.termMapping(baseType, prop)}
       );
-  }
-`;
+    }
+  `;
     
   }
 

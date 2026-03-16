@@ -1,0 +1,72 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix cal:  <http://www.w3.org/2002/12/cal/ical#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+@prefix meeting-shape: <https://solidproject.org/shapes/meeting#> .
+
+meeting-shape:MeetingShape
+    a sh:NodeShape ;
+    rdfs:label "Meeting Shape" ;
+    rdfs:comment "Defines constraints for meeting instances including title, location, time, comments, and display color." ;
+    sh:targetClass cal:Vevent ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/meeting-pane/blob/main/src/meetingDetailsForm.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/meeting-pane/blob/main/src/meetingDetailsForm.ttl> ;
+    dct:references <http://www.w3.org/2002/12/cal/ical#Vevent> ; 
+    sh:codeIdentifier "Meeting";
+    
+    sh:property [
+        sh:path cal:summary ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxLength 256 ;
+        rdfs:label "Meeting Title" ;
+        rdfs:comment "The name or summary of the meeting.";
+        sh:codeIdentifier "title";
+    ] ;
+
+    sh:property [
+        sh:path cal:location ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxLength 128 ;
+        rdfs:label "Meeting Location" ;
+        rdfs:comment "The location where the meeting takes place.";
+        sh:codeIdentifier "location";
+    ] ;
+
+    sh:property [
+        sh:path cal:dtstart ;
+        sh:datatype xsd:dateTime ;
+        sh:minCount 0 ;
+        rdfs:label "Start Time" ;
+        rdfs:comment "The start date and time of the meeting.";
+        sh:codeIdentifier "startTime";
+    ] ;
+
+    sh:property [
+        sh:path cal:dtend ;
+        sh:datatype xsd:dateTime ;
+        sh:minCount 0 ;
+        rdfs:label "End Time" ;
+        rdfs:comment "The end date and time of the meeting.";
+        sh:codeIdentifier "endTime";
+    ] ;
+
+    sh:property [
+        sh:path cal:comment ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        rdfs:label "Comment" ;
+        rdfs:comment "Additional notes or comments about the meeting.";
+        sh:codeIdentifier "comment";
+    ]; 
+     .
+
+
