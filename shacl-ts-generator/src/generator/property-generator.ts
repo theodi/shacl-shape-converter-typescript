@@ -20,18 +20,28 @@ export class PropertyGenerator {
 
       return `
   get ${identifier}(): Set<string> {
-    return this.objects("${path}", ${mapping}, TermMapping.stringToLiteral)
-  }
-
+    return this.objects(
+      "${path}", 
+      ${mapping}, 
+      TermMapping.${this.termMapping(baseType, prop)}
+      );
+}
   add${capitalized}(value: ${baseType}) {
-      const valueSet = this.objects("${path}", ValueMapping.literalToString, TermMapping.stringToLiteral)
-      valueSet.add(value) 
-      }
-
+    const valueSet = this.objects(
+      "${path}", 
+      ${mapping}, 
+      TermMapping.${this.termMapping(baseType, prop)}
+      );
+    valueSet.add(value);
+}
   delete${capitalized}(value: ${baseType}) {
-    const valueSet = this.objects("${path}", ValueMapping.literalToString, TermMapping.stringToLiteral)
-    valueSet.delete(value)
-  }
+    const valueSet = this.objects(
+      "${path}", 
+      ${mapping}, 
+      TermMapping.${this.termMapping(baseType, prop)}
+      );
+    valueSet.delete(value);
+}
 `
     }
 
@@ -40,16 +50,25 @@ export class PropertyGenerator {
     // --------------------------------------------------
 
     const returnType = generatePropertyType(baseType, prop.cardinality)
+    const singularMethod = prop.cardinality.required && !prop.cardinality.multiple ? "singular" : "singularNullable";
+    const setterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "overwrite" : "overwriteNullable";
 
-    return `
-  get ${identifier}(): ${returnType} | undefined {
-    return this.singularNullable("${path}", ${mapping}) 
+  return `
+  get ${identifier}(): ${returnType} {
+    return this.${singularMethod}(
+      "${path}", 
+      ${mapping}
+      );
   }
-
-  set ${identifier}(value: ${baseType} | undefined) {
-    this.overwriteNullable("${path}", value, TermMapping.${this.termMapping(baseType)})
+  set ${identifier}(value: ${baseType}) {
+    this.${setterMethod}(
+      "${path}", 
+      value, 
+      TermMapping.${this.termMapping(baseType, prop)}
+      );
   }
-`
+`;
+    
   }
 
   // --------------------------------------------------
@@ -79,18 +98,14 @@ export class PropertyGenerator {
   // --------------------------------------------------
 
   private inferMapping(prop: ShapePropertyModel): string {
-
-    if (!prop.datatype)
-      return "ValueMapping.literalToString"
-
+    if (!prop.datatype) return "ValueMapping.literalToString"
+  
     const dt = prop.datatype.toLowerCase()
-
-    if (dt.includes("integer") || dt.includes("decimal"))
-      return "ValueMapping.literalToNumber"
-
-    if (dt.includes("boolean"))
-      return "ValueMapping.literalToBoolean"
-
+  
+    if (dt.includes("anyuri")) return "ValueMapping.iriToString"
+    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber"
+    if (dt.includes("boolean")) return "ValueMapping.literalToBoolean"
+    if (dt.includes("date")) return "ValueMapping.literalToDate"  // optional: if you have a date mapping
     return "ValueMapping.literalToString"
   }
 
@@ -98,21 +113,14 @@ export class PropertyGenerator {
   // Term Mapping Selection
   // --------------------------------------------------
 
-  private termMapping(type: string): string {
-
+  private termMapping(type: string, prop: ShapePropertyModel): string {
+    if (prop.datatype?.toLowerCase().includes("anyuri")) return "stringToIri"
+  
     switch (type) {
-
-      case "number":
-        return "numberToLiteral"
-
-      case "boolean":
-        return "booleanToLiteral"
-
-      case "Date":
-        return "dateToLiteral"
-
-      default:
-        return "stringToLiteral"
+      case "number": return "numberToLiteral"
+      case "boolean": return "booleanToLiteral"
+      case "Date": return "dateToLiteral"
+      default: return "stringToLiteral"
     }
   }
 
