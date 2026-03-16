@@ -5,11 +5,11 @@ export class ClassGenerator {
 
   constructor(
     private propertyGenerator = new PropertyGenerator()
-  ) {}
+  ) { }
 
   generate(shape: ShapeModel): string {
 
-    if (!shape.properties){
+    if (!shape.properties) {
       return ``
     }
 

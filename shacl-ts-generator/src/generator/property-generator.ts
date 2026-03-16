@@ -1,5 +1,4 @@
 import { generatePropertyType } from "./type-generator.js"
-
 import { ShapePropertyModel } from "../model/shacl-model.js";
 
 export class PropertyGenerator {
@@ -50,8 +49,6 @@ export class PropertyGenerator {
     // --------------------------------------------------
 
     const returnType = generatePropertyType(baseType, prop.cardinality)
-    const singularMethod = prop.cardinality.required && !prop.cardinality.multiple ? "singular" : "singularNullable";
-    const setterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "overwrite" : "overwriteNullable";
 
     return `
     get ${identifier}(): ${returnType} {
@@ -68,7 +65,7 @@ export class PropertyGenerator {
       );
     }
   `;
-    
+
   }
 
   // --------------------------------------------------
@@ -99,13 +96,13 @@ export class PropertyGenerator {
 
   private inferMapping(prop: ShapePropertyModel): string {
     if (!prop.datatype) return "ValueMapping.literalToString"
-  
+
     const dt = prop.datatype.toLowerCase()
-  
+
     if (dt.includes("anyuri")) return "ValueMapping.iriToString"
-    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber"
-    if (dt.includes("boolean")) return "ValueMapping.literalToBoolean"
-    if (dt.includes("date")) return "ValueMapping.literalToDate"  // optional: if you have a date mapping
+    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber" // change to ValueMapping.literalToNumber if/when available 
+    if (dt.includes("boolean")) return "ValueMapping.literalToString" // change to ValueMapping.literalToBoolean if/when available 
+    if (dt.includes("date")) return "ValueMapping.literalToDate"  
     return "ValueMapping.literalToString"
   }
 
@@ -115,10 +112,10 @@ export class PropertyGenerator {
 
   private termMapping(type: string, prop: ShapePropertyModel): string {
     if (prop.datatype?.toLowerCase().includes("anyuri")) return "stringToIri"
-  
+
     switch (type) {
       case "number": return "numberToLiteral"
-      case "boolean": return "booleanToLiteral"
+      case "boolean": return "stringToLiteral" // replace with booleanToLiteral if/when implemented
       case "Date": return "dateToLiteral"
       default: return "stringToLiteral"
     }
