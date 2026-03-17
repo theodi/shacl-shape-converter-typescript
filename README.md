@@ -211,13 +211,13 @@ shacl-ts-generator/
 Install TypeScript locally in your project:
 
 ``` 
+cd shacl-ts-generator
 npm install --save-dev typescript
 ```
 
 Build project:
 
 ```
-cd shacl-ts-generator
 npm run build
 ```
 
