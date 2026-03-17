@@ -9,7 +9,6 @@ export class PropertyGenerator {
     const path = prop.path
     const mapping = this.inferMapping(prop)
     const identifier = prop.codeIdentifier
-    const capitalized = this.capitalize(identifier)
 
     // --------------------------------------------------
     // MULTI VALUE PROPERTY
@@ -24,24 +23,7 @@ export class PropertyGenerator {
       ${mapping}, 
       TermMapping.${this.termMapping(baseType, prop)}
       );
-}
-  add${capitalized}(value: ${baseType}) {
-    const valueSet = this.objects(
-      "${path}", 
-      ${mapping}, 
-      TermMapping.${this.termMapping(baseType, prop)}
-      );
-    valueSet.add(value);
-}
-  delete${capitalized}(value: ${baseType}) {
-    const valueSet = this.objects(
-      "${path}", 
-      ${mapping}, 
-      TermMapping.${this.termMapping(baseType, prop)}
-      );
-    valueSet.delete(value);
-}
-`
+}`
     }
 
     // --------------------------------------------------
@@ -51,20 +33,19 @@ export class PropertyGenerator {
     const returnType = generatePropertyType(baseType, prop.cardinality)
 
     return `
-    get ${identifier}(): ${returnType} {
+  get ${identifier}(): ${returnType} {
       return this.${prop.cardinality.required && !prop.cardinality.multiple ? 'singular' : 'singularNullable'}(
         "${path}",
         ${mapping}
       );
     }
-    set ${identifier}(value: ${baseType}) {
+  set ${identifier}(value: ${baseType}) {
       this.${prop.cardinality.required && !prop.cardinality.multiple ? 'overwrite' : 'overwriteNullable'}(
         "${path}",
         value,
         TermMapping.${this.termMapping(baseType, prop)}
       );
-    }
-  `;
+    }`;
 
   }
 
