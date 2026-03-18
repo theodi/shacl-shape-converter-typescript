@@ -1,5 +1,5 @@
 {
-  "name": "shacl-converter",
+  "name": "@theodi/shacl-converter",
   "version": "1.0.0",
   "description": "SHACL → TypeScript Class Generator",
   "type": "module",
