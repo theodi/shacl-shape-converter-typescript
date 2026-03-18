@@ -3,7 +3,6 @@ import path from "path"
 
 import { ShaclParser } from "../parser/shacl-parser.js"
 import { ClassGenerator } from "./class-generator.js"
-import { NamingUtils } from "../utils/naming.js"
 
 export async function generateFromShacl(
   input: string,

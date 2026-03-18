@@ -1,16 +1,20 @@
 {
   "name": "shacl-ts-generator",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "SHACL → TypeScript Class Generator",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "shacl-converter": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "vitest",
-    "build": "tsc"
+    "build": "tsc",
+    "prepare": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@rdfjs/types": "^2.0.1",
     "commander": "^14.0.3",
@@ -26,8 +30,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
-  },
-  "bin": {
-    "shacl-converter": "./dist/cli.js"
   }
 }
