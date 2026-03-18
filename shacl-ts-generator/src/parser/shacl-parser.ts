@@ -16,7 +16,7 @@ export class ShaclParser {
 
     const validator = new ValidationErrorCollector()
 
-    this.validateShapes(ds, validator)
+    this.validateShapes(ds, validator, filePath)
 
     if (validator.hasErrors()) {
       validator.printAndExit()
@@ -31,19 +31,21 @@ export class ShaclParser {
 
   private validateShapes(
     quads: ShaclDataset,
-    validator: ValidationErrorCollector
+    validator: ValidationErrorCollector,
+    filePath: string
   ): void {
 
     for (const shapeNode of quads.nodeShapes) {
 
       this.validateProperties(
         shapeNode,
-        validator
+        validator,
+        filePath
       )
 
       if (!shapeNode.codeIdentifier) {
         validator.add(
-          `Shape ${shapeNode} is missing required sh:codeIdentifier`
+          `File ${filePath}: Shape ${shapeNode.name} is missing required sh:codeIdentifier \n`
         )
         continue
       }
@@ -56,21 +58,22 @@ export class ShaclParser {
 
   private validateProperties(
     shapeNode: ShapeModel,
-    validator: ValidationErrorCollector
+    validator: ValidationErrorCollector,
+    filePath: string
   ): void {
 
     for (const property of shapeNode.properties) {
 
       if (!property.path) {
         validator.add(
-          `Property ${property} is missing sh:path`
+          `File ${filePath}: Property ${JSON.stringify(property)} is missing sh:path \n`
         )
         continue
       }
 
       if (!property.codeIdentifier) {
         validator.add(
-          `Property ${property} is missing sh:codeIdentifier`
+          `File ${filePath}: Property ${JSON.stringify(property)} is missing sh:codeIdentifier \n`
         )
         continue
       }

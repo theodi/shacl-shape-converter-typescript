@@ -1,5 +1,4 @@
 import { generatePropertyType } from "./type-generator.js"
-
 import { ShapePropertyModel } from "../model/shacl-model.js";
 
 export class PropertyGenerator {
@@ -10,7 +9,8 @@ export class PropertyGenerator {
     const path = prop.path
     const mapping = this.inferMapping(prop)
     const identifier = prop.codeIdentifier
-    const capitalized = this.capitalize(identifier)
+
+    
 
     // --------------------------------------------------
     // MULTI VALUE PROPERTY
@@ -20,19 +20,12 @@ export class PropertyGenerator {
 
       return `
   get ${identifier}(): Set<string> {
-    return this.objects("${path}", ${mapping}, TermMapping.stringToLiteral)
-  }
-
-  add${capitalized}(value: ${baseType}) {
-      const valueSet = this.objects("${path}", ValueMapping.literalToString, TermMapping.stringToLiteral)
-      valueSet.add(value) 
-      }
-
-  delete${capitalized}(value: ${baseType}) {
-    const valueSet = this.objects("${path}", ValueMapping.literalToString, TermMapping.stringToLiteral)
-    valueSet.delete(value)
-  }
-`
+    return this.objects(
+      "${path}", 
+      ${mapping}, 
+      TermMapping.${this.termMapping(baseType, prop)}
+      );
+}`
     }
 
     // --------------------------------------------------
@@ -42,14 +35,20 @@ export class PropertyGenerator {
     const returnType = generatePropertyType(baseType, prop.cardinality)
 
     return `
-  get ${identifier}(): ${returnType} | undefined {
-    return this.singularNullable("${path}", ${mapping}) 
-  }
+  get ${identifier}(): ${returnType} {
+      return this.${prop.cardinality.required && !prop.cardinality.multiple ? 'singular' : 'singularNullable'}(
+        "${path}",
+        ${mapping}
+      );
+    }
+  set ${identifier}(value: ${baseType}) {
+      this.${prop.cardinality.required && !prop.cardinality.multiple ? 'overwrite' : 'overwriteNullable'}(
+        "${path}",
+        value,
+        TermMapping.${this.termMapping(baseType, prop)}
+      );
+    }`;
 
-  set ${identifier}(value: ${baseType} | undefined) {
-    this.overwriteNullable("${path}", value, TermMapping.${this.termMapping(baseType)})
-  }
-`
   }
 
   // --------------------------------------------------
@@ -79,18 +78,14 @@ export class PropertyGenerator {
   // --------------------------------------------------
 
   private inferMapping(prop: ShapePropertyModel): string {
-
-    if (!prop.datatype)
-      return "ValueMapping.literalToString"
+    if (!prop.datatype) return "ValueMapping.literalToString"
 
     const dt = prop.datatype.toLowerCase()
 
-    if (dt.includes("integer") || dt.includes("decimal"))
-      return "ValueMapping.literalToNumber"
-
-    if (dt.includes("boolean"))
-      return "ValueMapping.literalToBoolean"
-
+    if (dt.includes("anyuri")) return "ValueMapping.iriToString"
+    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber" // change to ValueMapping.literalToNumber if/when available 
+    if (dt.includes("boolean")) return "ValueMapping.literalToString" // change to ValueMapping.literalToBoolean if/when available 
+    if (dt.includes("date")) return "ValueMapping.literalToDate"  
     return "ValueMapping.literalToString"
   }
 
@@ -98,21 +93,14 @@ export class PropertyGenerator {
   // Term Mapping Selection
   // --------------------------------------------------
 
-  private termMapping(type: string): string {
+  private termMapping(type: string, prop: ShapePropertyModel): string {
+    if (prop.datatype?.toLowerCase().includes("anyuri")) return "stringToIri"
 
     switch (type) {
-
-      case "number":
-        return "numberToLiteral"
-
-      case "boolean":
-        return "booleanToLiteral"
-
-      case "Date":
-        return "dateToLiteral"
-
-      default:
-        return "stringToLiteral"
+      case "number": return "numberToLiteral"
+      case "boolean": return "stringToLiteral" // replace with booleanToLiteral if/when implemented
+      case "Date": return "dateToLiteral"
+      default: return "stringToLiteral"
     }
   }
 

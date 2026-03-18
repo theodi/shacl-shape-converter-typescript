@@ -5,7 +5,7 @@ export class IndexGenerator {
   generateIndex(shapes: ShapeModel[]): string {
 
     const exports = shapes
-      .map(s => `export * from "./${s.name}"`)
+      .map(s => `export * from "./${s.codeIdentifier}"`)
       .join("\n")
 
     return exports

@@ -5,11 +5,11 @@ export class ClassGenerator {
 
   constructor(
     private propertyGenerator = new PropertyGenerator()
-  ) {}
+  ) { }
 
   generate(shape: ShapeModel): string {
 
-    if (!shape.properties){
+    if (!shape.properties) {
       return ``
     }
 
@@ -17,10 +17,9 @@ export class ClassGenerator {
       .map(p => this.propertyGenerator.generateProperty(p))
       .join("\n")
 
-    return `
-import { ValueMapping, TermMapping, TermWrapper, ObjectMapping } from "rdfjs-wrapper"
+    return `import { ValueMapping, TermMapping, TermWrapper, ObjectMapping } from "rdfjs-wrapper"
 
-export class ${shape.name} extends TermWrapper {
+export class ${shape.codeIdentifier} extends TermWrapper {
 ${properties}
 }
 `

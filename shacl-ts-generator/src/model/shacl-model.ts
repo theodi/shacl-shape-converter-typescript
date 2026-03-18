@@ -1,5 +1,5 @@
 import { DatasetWrapper, ObjectMapping, TermWrapper, ValueMapping } from "rdfjs-wrapper"
-import type { CardinalityInfo } from "./cardinality.js"
+import type { CardinalityInfo } from "./cardinality.ts"
 
 export const SHACL = {
     codeIdentifier: "http://www.w3.org/ns/shacl#codeIdentifier",
@@ -10,6 +10,12 @@ export const SHACL = {
     NodeShape: "http://www.w3.org/ns/shacl#NodeShape",
     path: "http://www.w3.org/ns/shacl#path",
     property: "http://www.w3.org/ns/shacl#property",
+
+    node: "http://www.w3.org/ns/shacl#node",
+    class: "http://www.w3.org/ns/shacl#class",
+    value: "http://www.w3.org/ns/shacl#value",
+    inversePath: "http://www.w3.org/ns/shacl#inversePath"
+
 } as const
 
 export class ShaclDataset extends DatasetWrapper {
@@ -35,6 +41,22 @@ export class ShapePropertyModel extends TermWrapper {
         return this.singularNullable(SHACL.datatype, ValueMapping.iriToString)
     }
 
+    get nodeShape(): string | undefined {
+        return this.singularNullable(SHACL.node, ValueMapping.iriToString)
+    }
+
+    get class(): string | undefined {
+        return this.singularNullable(SHACL.class, ValueMapping.iriToString)
+    }
+
+    get fixedValue(): string | undefined {
+        return this.singularNullable(SHACL.value, ValueMapping.iriToString)
+    }
+
+    get inversePath(): string | undefined {
+        return this.singularNullable(SHACL.inversePath, ValueMapping.iriToString)
+    }
+
     get minCount(): number | undefined {
         return this.singularNullable(SHACL.minCount, ValueMapping.literalToNumber)
     }
@@ -45,13 +67,22 @@ export class ShapePropertyModel extends TermWrapper {
 
     get cardinality(): CardinalityInfo {
         const min = this.minCount ?? 0
+        const max = this.maxCount
+
+        const isSingle = max === 1
+        const isMultiple = max === undefined || max > 1
 
         return {
             required: min >= 1,
-            singular: this.maxCount === 1,
-            multiple: this.maxCount === undefined || this.maxCount > 1
-        }
+            singular: isSingle,
+            multiple: isMultiple
     }
+}
+
+    get node(): string | undefined {
+        return this.singularNullable(SHACL.node, ValueMapping.iriToString)
+    }
+
 }
 
 export class ShapeModel extends TermWrapper {

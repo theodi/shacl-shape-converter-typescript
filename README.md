@@ -211,6 +211,7 @@ shacl-ts-generator/
 Install TypeScript locally in your project:
 
 ``` 
+cd shacl-ts-generator
 npm install --save-dev typescript
 ```
 
@@ -220,20 +221,19 @@ Build project:
 npm run build
 ```
 
-Run CLI:
+You can now run CLI with:
 
 ```
 node src/cli.ts tests/data/shapes.ttl output
 ```
 
-Register globally:
+or register globally with:
 
 ```
-npm run build
 npm link
 ```
 
-Run CLI:
+and then run CLI with:
 
 ```
 shacl-converter tests/data/shapes.ttl output
