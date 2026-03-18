@@ -10,6 +10,8 @@ export class PropertyGenerator {
     const mapping = this.inferMapping(prop)
     const identifier = prop.codeIdentifier
 
+    
+
     // --------------------------------------------------
     // MULTI VALUE PROPERTY
     // --------------------------------------------------

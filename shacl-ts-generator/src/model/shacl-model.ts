@@ -1,5 +1,5 @@
 import { DatasetWrapper, ObjectMapping, TermWrapper, ValueMapping } from "rdfjs-wrapper"
-import type { CardinalityInfo } from "./cardinality.js"
+import type { CardinalityInfo } from "./cardinality.ts"
 
 export const SHACL = {
     codeIdentifier: "http://www.w3.org/ns/shacl#codeIdentifier",
@@ -67,13 +67,17 @@ export class ShapePropertyModel extends TermWrapper {
 
     get cardinality(): CardinalityInfo {
         const min = this.minCount ?? 0
+        const max = this.maxCount
+
+        const isSingle = max === 1
+        const isMultiple = max === undefined || max > 1
 
         return {
             required: min >= 1,
-            singular: this.maxCount === 1,
-            multiple: this.maxCount === undefined || this.maxCount > 1
-        }
+            singular: isSingle,
+            multiple: isMultiple
     }
+}
 
     get node(): string | undefined {
         return this.singularNullable(SHACL.node, ValueMapping.iriToString)
