@@ -36,7 +36,7 @@ export class ShapePropertyModel extends TermWrapper {
     return this.singular(SHACL.name, ValueMapping.literalToString);
   }
 
-  get datatype(): string | undefined {
+  get datatypeConstraint(): string | undefined {
     return this.singularNullable(SHACL.datatype, ValueMapping.iriToString);
   }
 
@@ -108,7 +108,7 @@ export class ShapePropertyModel extends TermWrapper {
     return value.split(/[#/]/).pop() || this.codeIdentifier;
   }
 
-  
+
 
   /**
    * Returns the sh:codeIdentifier of the nested shape if available in registry
@@ -128,7 +128,7 @@ export class ShapeModel extends TermWrapper {
   }
 
   get name(): string {
-    return this.term.value.split(/[/#]/).pop() || "Unknown";
+    return this.value.split(/[/#]/).pop() || "Unknown";
   }
 
   get properties(): Set<ShapePropertyModel> {

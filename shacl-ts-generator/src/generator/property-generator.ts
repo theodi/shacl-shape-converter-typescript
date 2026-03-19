@@ -24,7 +24,7 @@ export class PropertyGenerator {
       const className = prop.nestedClassName;
 
       // Lookup the registry for the nested shape
-      
+
       let codeIdentifier = className; // fallback
 
       if (shapeRegistry) {
@@ -86,8 +86,8 @@ export class PropertyGenerator {
 
   // ---------------- Type inference ----------------
   private inferType(prop: ShapePropertyModel): string {
-    if (!prop.datatype) return "string";
-    const dt = prop.datatype.toLowerCase();
+    if (!prop.datatypeConstraint) return "string";
+    const dt = prop.datatypeConstraint.toLowerCase();
     if (dt.includes("integer") || dt.includes("decimal")) return "number";
     if (dt.includes("boolean")) return "boolean";
     if (dt.includes("date")) return "Date";
@@ -96,8 +96,8 @@ export class PropertyGenerator {
 
   // ---------------- Mapping inference ----------------
   private inferMapping(prop: ShapePropertyModel): string {
-    if (!prop.datatype) return "ValueMapping.literalToString";
-    const dt = prop.datatype.toLowerCase();
+    if (!prop.datatypeConstraint) return "ValueMapping.literalToString";
+    const dt = prop.datatypeConstraint.toLowerCase();
     if (dt.includes("anyuri")) return "ValueMapping.iriToString";
     if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber";
     if (dt.includes("boolean")) return "ValueMapping.literalToString"; // upgrade later
@@ -107,7 +107,7 @@ export class PropertyGenerator {
 
   // ---------------- Term mapping ----------------
   private termMapping(type: string, prop: ShapePropertyModel): string {
-    if (prop.datatype?.toLowerCase().includes("anyuri")) return "stringToIri";
+    if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) return "stringToIri";
     switch (type) {
       case "number": return "numberToLiteral";
       case "boolean": return "stringToLiteral";
