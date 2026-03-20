@@ -10,6 +10,8 @@ export type ShapeRegistryEntry = {
   fileName: string; // filename containing the shape
 };
 
+
+
 export class ClassGenerator {
 
   constructor(
@@ -17,23 +19,42 @@ export class ClassGenerator {
     private shapeRegistry?: Map<string, ShapeRegistryEntry> // updated type
   ) {}
 
-  generate(shape: ShapeModel): string {
-    const imports = new Set<string>();
 
-    // Generate properties and pass the shapeRegistry
-    const properties = [...shape.properties]
-      .map(p => this.propertyGenerator.generateProperty(p, imports, this.shapeRegistry))
-      .join("");
+  generate(shape: ShapeModel): string | undefined {
+  const imports = new Set<string>();
 
-    // Base RDFJS imports
-    imports.add(`import { ValueMapping, TermMapping, TermWrapper, ObjectMapping } from "rdfjs-wrapper";`);
+  const usage = {
+    objectMapping: false,
+    valueMapping: false,
+    termMapping: false
+  };
 
-    return [
-      ...imports,
-      ``,
-      `export class ${shape.codeIdentifier} extends TermWrapper {`,
-      properties,
-      `}`
-    ].join("\n");
+  const generatedProperties = [...shape.properties]
+    .map(p => this.propertyGenerator.generateProperty(p, imports, this.shapeRegistry, usage))
+    .filter(p => p.trim().length > 0);
+
+  // Skip file if no properties generated
+  if (generatedProperties.length === 0) {
+    return undefined;
   }
+
+  const properties = generatedProperties.join("");
+
+  const rdfImports = ["TermWrapper"];
+
+  if (usage.valueMapping) rdfImports.push("ValueMapping");
+  if (usage.termMapping) rdfImports.push("TermMapping");
+  if (usage.objectMapping) rdfImports.push("ObjectMapping");
+
+  imports.add(`import { ${rdfImports.join(", ")} } from "rdfjs-wrapper";`);
+
+  return [
+    ...[...imports].sort(),
+    ``,
+    `export class ${shape.codeIdentifier} extends TermWrapper {`,
+    properties,
+    `}`,
+    ``
+  ].join("\n");
+}
 }

@@ -86,10 +86,10 @@ export async function generateFromShacl(
 
     const classCode = classGenerator.generate(shape);
 
+    if (!classCode) continue;
+    
     await fs.writeFile(
-      path.join(output, `${shape.codeIdentifier}.ts`),
-      classCode
-    );
+      path.join(output, `${shape.codeIdentifier}.ts`),classCode);
   }
 
   // --------------------------------------------------

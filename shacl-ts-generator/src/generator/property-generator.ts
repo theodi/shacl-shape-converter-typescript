@@ -3,6 +3,13 @@ import { ShapePropertyModel } from "../model/shacl-model.js";
 import { generatePropertyType } from "./type-generator.js";
 import type { ShapeRegistryEntry } from "./class-generator.js";
 
+type MappingUsage = {
+    objectMapping?: boolean;
+    valueMapping?: boolean;
+    termMapping?: boolean;
+    };
+
+
 export class PropertyGenerator {
 
   /**
@@ -11,17 +18,21 @@ export class PropertyGenerator {
   generateProperty(
     prop: ShapePropertyModel,
     imports?: Set<string>,
-    shapeRegistry?: Map<string, ShapeRegistryEntry>
+    shapeRegistry?: Map<string, ShapeRegistryEntry>,
+    usage?: MappingUsage
   ): string {
 
     const identifier = prop.codeIdentifier;
     const path = prop.path;
+
+    
 
     // --------------------------------------------------
     // NESTED PROPERTY (sh:node)
     // --------------------------------------------------
     if (prop.isNested && prop.nestedClassName) {
       const className = prop.nestedClassName;
+       if (usage) usage.objectMapping = true;
 
       // Lookup the registry for the nested shape
       
@@ -36,7 +47,7 @@ export class PropertyGenerator {
 
       // Register import
       if (imports) {
-        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}';`);
+        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
       }
 
       // Multi-valued
@@ -63,10 +74,15 @@ export class PropertyGenerator {
     const baseType = this.inferType(prop);
     const mapping = this.inferMapping(prop);
     const termMapping = this.termMapping(baseType, prop);
-    const returnType = generatePropertyType(baseType, prop.cardinality);
+    const getSetType = generatePropertyType(baseType, prop.cardinality);
 
     const getterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "singular" : "singularNullable";
     const setterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "overwrite" : "overwriteNullable";
+
+    if (usage) {
+      usage.valueMapping = true;
+      usage.termMapping = true;
+}
 
     if (prop.cardinality.multiple) {
       return `
@@ -76,10 +92,10 @@ export class PropertyGenerator {
     }
 
     return `
-  get ${identifier}(): ${returnType} {
+  get ${identifier}(): ${getSetType} {
     return this.${getterMethod}("${path}", ${mapping});
   }
-  set ${identifier}(value: ${baseType}) {
+  set ${identifier}(value: ${getSetType}) {
     this.${setterMethod}("${path}", value, TermMapping.${termMapping});
   }`;
   }
