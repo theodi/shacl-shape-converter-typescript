@@ -1,110 +1,118 @@
-import { generatePropertyType } from "./type-generator.js"
+// src/generator/property-generator.ts
 import { ShapePropertyModel } from "../model/shacl-model.js";
+import { generatePropertyType } from "./type-generator.js";
+import type { ShapeRegistryEntry } from "./class-generator.js";
 
 export class PropertyGenerator {
 
-  generateProperty(prop: ShapePropertyModel): string {
+  /**
+   * Generate TypeScript property code for a SHACL property
+   */
+  generateProperty(
+    prop: ShapePropertyModel,
+    imports?: Set<string>,
+    shapeRegistry?: Map<string, ShapeRegistryEntry>
+  ): string {
 
-    const baseType = this.inferType(prop)
-    const path = prop.path
-    const mapping = this.inferMapping(prop)
-    const identifier = prop.codeIdentifier
-
-    
+    const identifier = prop.codeIdentifier;
+    const path = prop.path;
 
     // --------------------------------------------------
-    // MULTI VALUE PROPERTY
+    // NESTED PROPERTY (sh:node)
     // --------------------------------------------------
+    if (prop.isNested && prop.nestedClassName) {
+      const className = prop.nestedClassName;
 
-    if (prop.cardinality.multiple) {
+      // Lookup the registry for the nested shape
+      
+      let codeIdentifier = className; // fallback
 
+      if (shapeRegistry) {
+        const entry = shapeRegistry.get(className);
+        if (entry) {
+          codeIdentifier = entry.shape.codeIdentifier;
+        }
+      }
+
+      // Register import
+      if (imports) {
+        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}';`);
+      }
+
+      // Multi-valued
+      if (prop.cardinality.multiple) {
+        return `
+  get ${identifier}(): Set<${codeIdentifier}> {
+    return this.objects("${path}", ObjectMapping.as(${codeIdentifier}), ObjectMapping.as(${codeIdentifier}));
+  }`;
+      }
+
+      // Single-valued
       return `
-  get ${identifier}(): Set<string> {
-    return this.objects(
-      "${path}", 
-      ${mapping}, 
-      TermMapping.${this.termMapping(baseType, prop)}
-      );
-}`
+  get ${identifier}(): ${codeIdentifier} | undefined {
+    return this.singularNullable("${path}", ObjectMapping.as(${codeIdentifier}), ObjectMapping.as(${codeIdentifier}));
+  }
+  set ${identifier}(value: ${codeIdentifier} | undefined) {
+    this.overwriteNullable("${path}", value, ObjectMapping.as(${codeIdentifier}));
+  }`;
     }
 
     // --------------------------------------------------
-    // SINGLE VALUE PROPERTY
+    // PRIMITIVE PROPERTY
     // --------------------------------------------------
+    const baseType = this.inferType(prop);
+    const mapping = this.inferMapping(prop);
+    const termMapping = this.termMapping(baseType, prop);
+    const returnType = generatePropertyType(baseType, prop.cardinality);
 
-    const returnType = generatePropertyType(baseType, prop.cardinality)
+    const getterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "singular" : "singularNullable";
+    const setterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "overwrite" : "overwriteNullable";
+
+    if (prop.cardinality.multiple) {
+      return `
+  get ${identifier}(): Set<${baseType}> {
+    return this.objects("${path}", ${mapping}, TermMapping.${termMapping});
+  }`;
+    }
 
     return `
   get ${identifier}(): ${returnType} {
-      return this.${prop.cardinality.required && !prop.cardinality.multiple ? 'singular' : 'singularNullable'}(
-        "${path}",
-        ${mapping}
-      );
-    }
+    return this.${getterMethod}("${path}", ${mapping});
+  }
   set ${identifier}(value: ${baseType}) {
-      this.${prop.cardinality.required && !prop.cardinality.multiple ? 'overwrite' : 'overwriteNullable'}(
-        "${path}",
-        value,
-        TermMapping.${this.termMapping(baseType, prop)}
-      );
-    }`;
-
+    this.${setterMethod}("${path}", value, TermMapping.${termMapping});
+  }`;
   }
 
-  // --------------------------------------------------
-  // Type Inference
-  // --------------------------------------------------
-
+  // ---------------- Type inference ----------------
   private inferType(prop: ShapePropertyModel): string {
-
-    if (!prop.datatype) return "string"
-
-    const dt = prop.datatype.toLowerCase()
-
-    if (dt.includes("integer") || dt.includes("decimal"))
-      return "number"
-
-    if (dt.includes("boolean"))
-      return "boolean"
-
-    if (dt.includes("date"))
-      return "Date"
-
-    return "string"
+    if (!prop.datatype) return "string";
+    const dt = prop.datatype.toLowerCase();
+    if (dt.includes("integer") || dt.includes("decimal")) return "number";
+    if (dt.includes("boolean")) return "boolean";
+    if (dt.includes("date")) return "Date";
+    return "string";
   }
 
-  // --------------------------------------------------
-  // Mapping Inference
-  // --------------------------------------------------
-
+  // ---------------- Mapping inference ----------------
   private inferMapping(prop: ShapePropertyModel): string {
-    if (!prop.datatype) return "ValueMapping.literalToString"
-
-    const dt = prop.datatype.toLowerCase()
-
-    if (dt.includes("anyuri")) return "ValueMapping.iriToString"
-    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber" // change to ValueMapping.literalToNumber if/when available 
-    if (dt.includes("boolean")) return "ValueMapping.literalToString" // change to ValueMapping.literalToBoolean if/when available 
-    if (dt.includes("date")) return "ValueMapping.literalToDate"  
-    return "ValueMapping.literalToString"
+    if (!prop.datatype) return "ValueMapping.literalToString";
+    const dt = prop.datatype.toLowerCase();
+    if (dt.includes("anyuri")) return "ValueMapping.iriToString";
+    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber";
+    if (dt.includes("boolean")) return "ValueMapping.literalToString"; // upgrade later
+    if (dt.includes("date")) return "ValueMapping.literalToDate";
+    return "ValueMapping.literalToString";
   }
 
-  // --------------------------------------------------
-  // Term Mapping Selection
-  // --------------------------------------------------
-
+  // ---------------- Term mapping ----------------
   private termMapping(type: string, prop: ShapePropertyModel): string {
-    if (prop.datatype?.toLowerCase().includes("anyuri")) return "stringToIri"
-
+    if (prop.datatype?.toLowerCase().includes("anyuri")) return "stringToIri";
     switch (type) {
-      case "number": return "numberToLiteral"
-      case "boolean": return "stringToLiteral" // replace with booleanToLiteral if/when implemented
-      case "Date": return "dateToLiteral"
-      default: return "stringToLiteral"
+      case "number": return "numberToLiteral";
+      case "boolean": return "stringToLiteral";
+      case "Date": return "dateToLiteral";
+      default: return "stringToLiteral";
     }
-  }
-
-  private capitalize(value: string): string {
-    return value.charAt(0).toUpperCase() + value.slice(1)
   }
 }
