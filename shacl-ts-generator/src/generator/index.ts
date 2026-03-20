@@ -98,9 +98,8 @@ export async function generateFromShacl(
   const indexCode = shapes
     .map(s => {
       // Use the fileName for the export path
-      const fileName = s.fileName;
       const codeId = s.shape.codeIdentifier;
-      return `export * from "./${fileName}"; // ${codeId}`;
+      return `export * from "./${codeId}"; // ${codeId}`;
     })
     .join("\n");
 
