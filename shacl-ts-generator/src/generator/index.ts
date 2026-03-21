@@ -67,7 +67,7 @@ export async function generateFromShacl(
 
   for (const entry of shapes) {
     const shape = entry.shape;
-    shapeRegistry.set(shape.term.value, {
+    shapeRegistry.set(shape.value, {
       shape,
       fileName: entry.fileName,
       codeIdentifier: entry.codeIdentifier,
