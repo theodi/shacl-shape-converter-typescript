@@ -13,10 +13,16 @@ npm install @theodi/shacl-converter
 Run the converter by providing a SHACL shape file and an output directory:
 
 ```
-shacl-converter <shapes-file> <output-directory>
+npx shacl-converter <shapes-file> <output-directory>
 ```
 
 For example:
+
+```
+npx shacl-converter shapes.ttl output
+```
+
+Alternatively, install globally with `npm install -g @theodi/shacl-converter` and run directly:
 
 ```
 shacl-converter shapes.ttl output
@@ -63,7 +69,7 @@ The identifier must match:
 ^[a-zA-Z_][a-zA-Z0-9_]*$
 ```
 
-Specification reference: SHACL 1.2 Core Working Draft.
+Note: The `sh:codeIdentifier` predicate and the identifier regex above are specific to this generator and are not part of the SHACL Core specification. For background on SHACL shapes and constraints, see the SHACL 1.2 Core Working Draft.
 
 ### Properties
 

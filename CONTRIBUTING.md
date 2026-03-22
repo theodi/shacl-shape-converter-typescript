@@ -102,4 +102,7 @@ typescript
 ts-node
 vitest
 @types/node
+@types/fs-extra
+@types/n3
+execa
 ```
