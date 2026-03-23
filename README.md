@@ -106,10 +106,9 @@ Missing metadata causes generation failure.
 * sh:class
 * sh:minCount
 * sh:maxCount
-* sh:targetClass
-* sh:targetNode
-* sh:targetSubjectsOf
-* sh:targetObjectsOf
+* sh:name
+* sh:node
+* sh:value
 * sh:codeIdentifier
 
 ---
