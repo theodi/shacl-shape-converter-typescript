@@ -28,6 +28,12 @@ Alternatively, install globally with `npm install -g @theodi/shacl-converter` an
 shacl-converter shapes.ttl output
 ```
 
+Providing a directory containing SHACL shape files is also supported:
+
+```
+npx shacl-converter <shapes-file-directory> <output-directory>
+```
+
 ## Output
 
 Each SHACL shape generates:
@@ -69,7 +75,11 @@ The identifier must match:
 ^[a-zA-Z_][a-zA-Z0-9_]*$
 ```
 
-Note: The `sh:codeIdentifier` predicate and the identifier regex above are specific to this generator and are not part of the SHACL Core specification. For background on SHACL shapes and constraints, see the SHACL 1.2 Core Working Draft.
+There are reserved words that cannot be used for the `sh:codeIdentifier` value:
+* *type*
+* *value*
+
+Note: The `sh:codeIdentifier` predicate and the identifier regex above are specific to this generator and are not part of the SHACL Core specification. The `sh:codeIdentifier` predicate is part of the [SHACL 1.2 Core Working Draft](https://www.w3.org/TR/shacl12-core/#codeIdentifier).
 
 ### Properties
 
@@ -86,7 +96,7 @@ Missing metadata causes generation failure.
 | ---------------- | ------------------- |
 | sh:minCount 1    | Required property   |
 | sh:maxCount 1    | Singular property   |
-| sh:maxCount > 1  | Collection property |
+| sh:maxCount > 1 or absent  | Collection property |
 
 ### Supported SHACL Predicates
 
