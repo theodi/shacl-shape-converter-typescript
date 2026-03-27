@@ -34,6 +34,17 @@ Providing a directory containing SHACL shape files is also supported:
 npx shacl-converter <shapes-file-directory> <output-directory>
 ```
 
+
+An optional `--prefix` flag can be provided to prepend a string to all generated class names and imports:
+
+```
+npx shacl-converter shapes.ttl output --prefix=Volunteer
+```
+
+This will generate classes such as `VolunteerActivity`, `VolunteerRole`, etc., while leaving RDF predicate IRIs unchanged.
+
+
+
 ## Output
 
 Each SHACL shape generates:
