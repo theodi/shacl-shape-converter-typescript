@@ -1,5 +1,5 @@
 // src/generator/class-generator.ts
-import { ShapeModel, ShapePropertyModel } from "../model/shacl-model.js";
+import { ShapeModel } from "../model/shacl-model.js";
 import { PropertyGenerator } from "./property-generator.js";
 
 /**
@@ -49,11 +49,22 @@ export class ClassGenerator {
 
     // ---------------- RDF imports ----------------
     const rdfImports = ["TermWrapper"];
-    if (usage.valueMapping) rdfImports.push("ValueMapping");
-    if (usage.termMapping) rdfImports.push("TermMapping");
-    if (usage.objectMapping) rdfImports.push("ObjectMapping");
+    if (usage) {
+      const mappingToImports: Record<keyof typeof usage, string[]> = {
+        valueMapping: ["LiteralAs"],
+        termMapping: ["LiteralFrom"],
+        objectMapping: ["TermAs", "TermFrom"]
+    };
 
-    imports.add(`import { ${rdfImports.join(", ")} } from "rdfjs-wrapper";`);
+    for (const key in mappingToImports) {
+      if (usage[key as keyof typeof usage]) {
+        rdfImports.push(...mappingToImports[key as keyof typeof usage]);
+    }
+  }
+}
+    imports.add(`import { ${rdfImports.join(", ")} } from "@rdfjs/wrapper";`);
+  
+
 
     // ---------------- Class name ----------------
     const className = `${shape.codeIdentifier}`;

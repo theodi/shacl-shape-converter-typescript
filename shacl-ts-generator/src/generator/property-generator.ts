@@ -1,7 +1,8 @@
 // src/generator/property-generator.ts
-import { ShapePropertyModel } from "../model/shacl-model.js";
+import { ShapePropertyModel, SHACL } from "../model/shacl-model.js";
 import { generatePropertyType } from "./type-generator.js";
 import type { ShapeRegistryEntry } from "./class-generator.js";
+import type { Term } from "@rdfjs/types";
 
 type MappingUsage = {
   objectMapping?: boolean;
@@ -9,15 +10,58 @@ type MappingUsage = {
   termMapping?: boolean;
 };
 
+// ------------------------
+// Detect simple named node paths
+// ------------------------
+// ------------------------
+// Detect simple named node paths
+// ------------------------
+function isSimpleNamedNodePath(path: any): boolean {
+  if (!path) return false;
+
+  // Only strings are expected, check for complex path indicators
+  if (typeof path === "string") {
+    const trimmed = path.trim();
+    // Skip blank nodes, sequences, inverse paths, path alternatives (/), negations (!), property sets ({})
+    if (
+      trimmed.startsWith("[") ||
+      trimmed.startsWith("{") ||
+      trimmed.startsWith("^") ||
+      trimmed.includes("!")
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  // If path is something else (unexpected), consider it complex
+  return false;
+}
+
 export class PropertyGenerator {
-  /**
-   * Generate TypeScript property code for a SHACL property
-   * @param prop The SHACL property
-   * @param imports Set of import statements
-   * @param shapeRegistry Registry of shapes
-   * @param usage Tracks which mappings are used
-   * @param classPrefix Optional prefix for class names 
-   */
+
+  // ---------------- Check for sh:in ----------------
+  private hasShIn(prop: ShapePropertyModel): boolean {
+    // Identity functions typed to Term to avoid 'any'
+    const values = (prop as any).objects?.(
+      SHACL.in,
+      (t: Term) => t,
+      (t: Term) => t
+    );
+    return values && values.size > 0;
+  }
+
+  // ---------------- NamedNode detection ----------------
+  private isNamedNodeProperty(prop: ShapePropertyModel): boolean {
+    if (this.hasShIn(prop)) {
+      console.warn(
+        `Skipping property "${prop.codeIdentifier}" because it uses sh:in, which is not supported.`
+      );
+      return false;
+    }
+    return !!(prop.class || prop.nodeTerm);
+  }
+
   generateProperty(
     prop: ShapePropertyModel,
     imports?: Set<string>,
@@ -27,21 +71,29 @@ export class PropertyGenerator {
   ): string {
     const identifier = prop.codeIdentifier;
 
-    // Keep full IRI for RDF predicate
-    const propertyIri = prop.path ? `"${prop.path}"` : `"${identifier}"`;
+    // ---------------- Skip sh:in ----------------
+    if (this.hasShIn(prop)) {
+      return ""; // do not generate code for sh:in properties
+    }
 
-    // --------------------------------------------------
-    // NESTED PROPERTY (sh:node or sh:class)
-    // --------------------------------------------------
+    // ---------------- Skip complex or blank-node paths ----------------
+    if (!prop.path || !isSimpleNamedNodePath(prop.path.toString())) {
+      console.warn(
+        `Skipping property "${prop.codeIdentifier}" because sh:path is complex or a blank node: ${prop.path}`
+      );
+      return "";
+    }
+
+    const propertyIri = `"${prop.path || prop.codeIdentifier}"`;
+
+    // ---------------- Nested property (sh:node or sh:class) ----------------
     if (prop.isNested && prop.nestedClassName) {
       let className = prop.nestedClassName;
 
-      // Strip full IRI to simple name for prefixing
       if (className.includes("://")) {
         className = className.split(/[#/]/).pop() || className;
       }
 
-      // Lookup registry for the nested class
       if (shapeRegistry) {
         const entry = shapeRegistry.get(prop.nestedClassName);
         if (entry) className = entry.shape.codeIdentifier;
@@ -51,31 +103,32 @@ export class PropertyGenerator {
 
       if (usage) usage.objectMapping = true;
 
-      // Register import for nested class
-      if (imports) imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
+      if (imports) {
+        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
+      }
 
-      // Multi-valued nested property
       if (prop.cardinality.multiple) {
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
-    return this.objects(${propertyIri}, ObjectMapping.as(${codeIdentifier}), ObjectMapping.as(${codeIdentifier}));
+    return this.objects(${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }`;
       }
 
-      // Single-valued nested property
       return `
   get ${identifier}(): ${codeIdentifier} | undefined {
-    return this.singularNullable(${propertyIri}, ObjectMapping.as(${codeIdentifier}), ObjectMapping.as(${codeIdentifier}));
+    return this.singularNullable(${propertyIri}, TermAs.instance(${codeIdentifier}));
   }
   set ${identifier}(value: ${codeIdentifier} | undefined) {
-    this.overwriteNullable(${propertyIri}, value, ObjectMapping.as(${codeIdentifier}));
+    this.overwriteNullable(${propertyIri}, value, TermAs.instance(${codeIdentifier}));
   }`;
     }
 
-    // ------------------ Primitive property ----------------
+    // ---------------- Primitive / NamedNode property ----------------
+    const isNamedNode = this.isNamedNodeProperty(prop);
+
     const baseType = this.inferType(prop);
-    const mapping = this.inferMapping(prop);
-    const termMap = this.termMapping(baseType, prop);
+    const mapping = this.inferMapping(prop, isNamedNode);
+    const termMap = this.termMapping(baseType, prop, isNamedNode);
     const getSetType = generatePropertyType(baseType, prop.cardinality);
 
     if (usage) {
@@ -83,19 +136,27 @@ export class PropertyGenerator {
       usage.termMapping = true;
     }
 
-    // Multi-valued primitive
+    // ---------------- Import handling ----------------
+    if (imports) {
+      if (isNamedNode) {
+        imports.add(`import { NamedNodeAs, NamedNodeFrom } from "@rdfjs/wrapper";`);
+      } 
+    }
+
+    // ---------------- Multi-valued ----------------
     if (prop.cardinality.multiple) {
       return `
   get ${identifier}(): Set<${baseType}> {
-    return this.objects(${propertyIri}, ${mapping}, TermMapping.${termMap});
+    return this.objects(${propertyIri}, ${mapping}, ${termMap});
   }`;
     }
 
-    // Single-valued primitive
+    // ---------------- Single-valued ----------------
     const getterMethod =
       prop.cardinality.required && !prop.cardinality.multiple
         ? "singular"
         : "singularNullable";
+
     const setterMethod =
       prop.cardinality.required && !prop.cardinality.multiple
         ? "overwrite"
@@ -106,7 +167,7 @@ export class PropertyGenerator {
     return this.${getterMethod}(${propertyIri}, ${mapping});
   }
   set ${identifier}(value: ${getSetType}) {
-    this.${setterMethod}(${propertyIri}, value, TermMapping.${termMap});
+    this.${setterMethod}(${propertyIri}, value, ${termMap});
   }`;
   }
 
@@ -121,28 +182,36 @@ export class PropertyGenerator {
   }
 
   // ---------------- Mapping inference ----------------
-  private inferMapping(prop: ShapePropertyModel): string {
-    if (!prop.datatypeConstraint) return "ValueMapping.literalToString";
+  private inferMapping(prop: ShapePropertyModel, isNamedNode: boolean): string {
+    if (!prop.datatypeConstraint) {
+      return isNamedNode ? "NamedNodeAs.string" : "LiteralAs.string";
+    }
+
     const dt = prop.datatypeConstraint.toLowerCase();
-    if (dt.includes("anyuri")) return "ValueMapping.iriToString";
-    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber";
-    if (dt.includes("boolean")) return "ValueMapping.literalToBoolean";
-    if (dt.includes("date")) return "ValueMapping.literalToDate";
-    return "ValueMapping.literalToString";
+
+    if (dt.includes("anyuri")) return "LiteralAs.string";
+    if (dt.includes("integer") || dt.includes("decimal")) return "LiteralAs.number";
+    if (dt.includes("boolean")) return "LiteralAs.boolean";
+    if (dt.includes("date")) return "LiteralAs.date";
+
+    return "LiteralAs.string";
   }
 
   // ---------------- Term mapping ----------------
-  private termMapping(type: string, prop: ShapePropertyModel): string {
-    if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) return "stringToIri";
+  private termMapping(type: string, prop: ShapePropertyModel, isNamedNode: boolean): string {
+    if (isNamedNode) {
+      return "NamedNodeFrom.string";
+    }
+
+    if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) {
+      return "LiteralFrom.anyUriString";
+    }
+
     switch (type) {
-      case "number":
-        return "numberToLiteral";
-      case "boolean":
-        return "booleanToLiteral";
-      case "Date":
-        return "dateToLiteral";
-      default:
-        return "stringToLiteral";
+      case "number": return "LiteralFrom.double";
+      case "boolean": return "LiteralFrom.boolean";
+      case "Date": return "LiteralFrom.date";
+      default: return "LiteralFrom.string";
     }
   }
 }
