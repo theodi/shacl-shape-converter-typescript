@@ -13,9 +13,6 @@ type MappingUsage = {
 // ------------------------
 // Detect simple named node paths
 // ------------------------
-// ------------------------
-// Detect simple named node paths
-// ------------------------
 function isSimpleNamedNodePath(path: any): boolean {
   if (!path) return false;
 
