@@ -4,99 +4,109 @@ import { generatePropertyType } from "./type-generator.js";
 import type { ShapeRegistryEntry } from "./class-generator.js";
 
 type MappingUsage = {
-    objectMapping?: boolean;
-    valueMapping?: boolean;
-    termMapping?: boolean;
-    };
-
+  objectMapping?: boolean;
+  valueMapping?: boolean;
+  termMapping?: boolean;
+};
 
 export class PropertyGenerator {
-
   /**
    * Generate TypeScript property code for a SHACL property
+   * @param prop The SHACL property
+   * @param imports Set of import statements
+   * @param shapeRegistry Registry of shapes
+   * @param usage Tracks which mappings are used
+   * @param classPrefix Optional prefix for class names
    */
   generateProperty(
     prop: ShapePropertyModel,
     imports?: Set<string>,
     shapeRegistry?: Map<string, ShapeRegistryEntry>,
-    usage?: MappingUsage
+    usage?: MappingUsage,
+    classPrefix: string = ""
   ): string {
-
     const identifier = prop.codeIdentifier;
-    const path = prop.path;
 
-    
+    // Keep full IRI for RDF predicate
+    const propertyIri = prop.path ? `"${prop.path}"` : `"${identifier}"`;
 
     // --------------------------------------------------
-    // NESTED PROPERTY (sh:node)
+    // NESTED PROPERTY (sh:node or sh:class)
     // --------------------------------------------------
     if (prop.isNested && prop.nestedClassName) {
-      const className = prop.nestedClassName;
-       if (usage) usage.objectMapping = true;
+      let className = prop.nestedClassName;
 
-      // Lookup the registry for the nested shape
+      // Strip full IRI to simple name for prefixing
+      if (className.includes("://")) {
+        className = className.split(/[#/]/).pop() || className;
+      }
 
-      let codeIdentifier = className; // fallback
-
+      // Lookup registry for the nested class
       if (shapeRegistry) {
-        const entry = shapeRegistry.get(className);
-        if (entry) {
-          codeIdentifier = entry.shape.codeIdentifier;
-        }
+        const entry = shapeRegistry.get(prop.nestedClassName);
+        if (entry) className = entry.shape.codeIdentifier;
       }
 
-      // Register import
-      if (imports) {
-        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
-      }
+      const codeIdentifier = `${classPrefix}${className}`;
 
-      // Multi-valued
+      if (usage) usage.objectMapping = true;
+
+      // Register import for nested class
+      if (imports) imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
+
+      // Multi-valued nested property
       if (prop.cardinality.multiple) {
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
-    return this.objects("${path}", TermAs.instance(${codeIdentifier}), TermFrom.instance);
+    return this.objects(${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }`;
       }
 
-      // Single-valued
+      // Single-valued nested property
       return `
   get ${identifier}(): ${codeIdentifier} | undefined {
-    return this.singularNullable("${path}", TermAs.instance(${codeIdentifier}), TermFrom.instance);
+    return this.singularNullable(${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }
   set ${identifier}(value: ${codeIdentifier} | undefined) {
-    this.overwriteNullable("${path}", value, TermAs.instance(${codeIdentifier}));
+    this.overwriteNullable(${propertyIri}, value, TermAs.instance(${codeIdentifier}));
   }`;
     }
 
-    // --------------------------------------------------
-    // PRIMITIVE PROPERTY
-    // --------------------------------------------------
+    // ------------------ Primitive property ----------------
     const baseType = this.inferType(prop);
     const mapping = this.inferMapping(prop);
-    const termMapping = this.termMapping(baseType, prop);
+    const termMap = this.termMapping(baseType, prop);
     const getSetType = generatePropertyType(baseType, prop.cardinality);
-
-    const getterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "singular" : "singularNullable";
-    const setterMethod = prop.cardinality.required && !prop.cardinality.multiple ? "overwrite" : "overwriteNullable";
 
     if (usage) {
       usage.valueMapping = true;
       usage.termMapping = true;
-}
+    }
 
+    // Multi-valued primitive
     if (prop.cardinality.multiple) {
       return `
   get ${identifier}(): Set<${baseType}> {
-    return this.objects("${path}", ${mapping}, ${termMapping});
+    return this.objects(${propertyIri}, ${mapping}, ${termMap});
   }`;
     }
 
+    // Single-valued primitive
+    const getterMethod =
+      prop.cardinality.required && !prop.cardinality.multiple
+        ? "singular"
+        : "singularNullable";
+    const setterMethod =
+      prop.cardinality.required && !prop.cardinality.multiple
+        ? "overwrite"
+        : "overwriteNullable";
+
     return `
   get ${identifier}(): ${getSetType} {
-    return this.${getterMethod}("${path}", ${mapping});
+    return this.${getterMethod}(${propertyIri}, ${mapping});
   }
   set ${identifier}(value: ${getSetType}) {
-    this.${setterMethod}("${path}", value, ${termMapping});
+    this.${setterMethod}(${propertyIri}, value, ${termMap});
   }`;
   }
 
@@ -116,7 +126,7 @@ export class PropertyGenerator {
     const dt = prop.datatypeConstraint.toLowerCase();
     if (dt.includes("anyuri")) return "LiteralAs.anyUriString";
     if (dt.includes("integer") || dt.includes("decimal")) return "LiteralAs.number";
-    if (dt.includes("boolean")) return "LiteralAs.string"; // upgrade later
+    if (dt.includes("boolean")) return "LiteralAs.boolean";
     if (dt.includes("date")) return "LiteralAs.date";
     return "LiteralAs.string";
   }
@@ -125,10 +135,14 @@ export class PropertyGenerator {
   private termMapping(type: string, prop: ShapePropertyModel): string {
     if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) return "LiteralFrom.anyUriString";
     switch (type) {
-      case "number": return "LiteralFrom.double";
-      case "boolean": return "LiteralFrom.string";
-      case "Date": return "LiteralFrom.Date";
-      default: return "LiteralFrom.string";
+      case "number":
+        return "LiteralFrom.double";
+      case "boolean":
+        return "LiteralFrom.boolean";
+      case "Date":
+        return "LiteralFrom.Date";
+      default:
+        return "LiteralFrom.string";
     }
   }
 }

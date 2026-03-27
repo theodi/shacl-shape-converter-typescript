@@ -90,23 +90,30 @@ export class ShapePropertyModel extends TermWrapper {
     return undefined; // ignore blank nodes for now
 }
 
-  get isNested(): boolean {
-    return !!this.nodeTerm;
-  }
+  get isNodeNested(): boolean { return !!this.nodeTerm; }
+  get isClassNested(): boolean { return !!this.class; }
+  get isNested(): boolean { return this.isNodeNested || this.isClassNested; }
 
   get isBlankNode(): boolean {
     return this.nodeTerm?.termType === "BlankNode";
   }
 
   get nestedClassName(): string | undefined {
-    if (!this.nodeTerm) return undefined;
+    if (this.nodeTerm) {
+        // Existing logic
+        let value = this.nodeTerm.value || this.nodeTerm.toString();
+        if (value.includes(":")) return value;
+        return value.split(/[#/]/).pop() || this.codeIdentifier;
+    }
 
-    let value = this.nodeTerm.value || this.nodeTerm.toString();
+    if (this.class) {
+        let value = this.class;
+        if (value.includes(":")) return value;
+        return value.split(/[#/]/).pop() || this.codeIdentifier;
+    }
 
-    if (value.includes(":")) return value;
-
-    return value.split(/[#/]/).pop() || this.codeIdentifier;
-  }
+    return undefined;
+}
 
 
 

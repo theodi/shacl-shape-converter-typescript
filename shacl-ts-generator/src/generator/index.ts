@@ -10,16 +10,18 @@ import type { ShapeModel } from "../model/shacl-model.js";
  */
 export async function generateFromShacl(
   input: string,
-  output: string
+  output: string,
+  options?: { classPrefix?: string }  // optional prefix
 ) {
   const parser = new ShaclParser();
+  const prefix = options?.classPrefix ?? "Volunteer";
 
   // --------------------------------------------------
   // STEP 1: Parse all shapes first
   // --------------------------------------------------
   const stat = await fs.stat(input);
 
-  let shapes: { shape: ShapeModel; fileName: string, codeIdentifier: string }[] = [];
+  let shapes: { shape: ShapeModel; fileName: string; codeIdentifier: string }[] = [];
 
   if (stat.isDirectory()) {
     const files = await fs.readdir(input);
@@ -36,8 +38,8 @@ export async function generateFromShacl(
       for (const shape of parsed) {
         shapes.push({
           shape,
-          fileName: path.basename(file, ".ttl"), // store filename for import resolution
-          codeIdentifier: shape.codeIdentifier
+          fileName: path.basename(file, ".ttl"),
+          codeIdentifier: shape.codeIdentifier,
         });
       }
     }
@@ -47,12 +49,10 @@ export async function generateFromShacl(
       shapes.push({
         shape,
         fileName: path.basename(input, ".ttl"),
-        codeIdentifier: shape.codeIdentifier
+        codeIdentifier: shape.codeIdentifier,
       });
     }
   }
-
-
 
   // --------------------------------------------------
   // STEP 2: Build shape registry (codeIdentifier → shape + filename)
@@ -60,7 +60,7 @@ export async function generateFromShacl(
   type ShapeRegistryEntry = {
     shape: ShapeModel;
     fileName: string;
-    codeIdentifier: string
+    codeIdentifier: string;
   };
 
   const shapeRegistry = new Map<string, ShapeRegistryEntry>();
@@ -77,34 +77,33 @@ export async function generateFromShacl(
   // --------------------------------------------------
   // STEP 3: Generate classes with registry
   // --------------------------------------------------
-  const classGenerator = new ClassGenerator(undefined, shapeRegistry);
+  const classGenerator = new ClassGenerator(prefix, shapeRegistry); // <-- pass prefix
 
   await fs.ensureDir(output);
 
   for (const entry of shapes) {
     const shape = entry.shape;
 
+    // Generate class code using the prefix
     const classCode = classGenerator.generate(shape);
 
     if (!classCode) continue;
-    
+
     await fs.writeFile(
-      path.join(output, `${shape.codeIdentifier}.ts`),classCode);
+      path.join(output, `${shape.codeIdentifier}.ts`), 
+      classCode
+    );
   }
 
   // --------------------------------------------------
-  // STEP 4: Generate index.ts
+  // STEP 4: Generate index.ts with prefixed exports
   // --------------------------------------------------
   const indexCode = shapes
-    .map(s => {
-      // Use the fileName for the export path
+    .map((s) => {
       const codeId = s.shape.codeIdentifier;
-      return `export * from "./${codeId}"; // ${codeId}`;
+      return `export * from "./${codeId}";`; 
     })
     .join("\n");
 
-  await fs.writeFile(
-    path.join(output, "index.ts"),
-    indexCode
-  );
+  await fs.writeFile(path.join(output, "index.ts"), indexCode);
 }

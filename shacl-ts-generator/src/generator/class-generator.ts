@@ -8,52 +8,62 @@ import { PropertyGenerator } from "./property-generator.js";
 export type ShapeRegistryEntry = {
   shape: ShapeModel;
   fileName: string; // filename containing the shape
+  codeIdentifier: string; // shape's code identifier
 };
 
-
-
 export class ClassGenerator {
-
   constructor(
-    private propertyGenerator = new PropertyGenerator(),
-    private shapeRegistry?: Map<string, ShapeRegistryEntry> // updated type
+    private classPrefix: string = "",
+    private shapeRegistry?: Map<string, ShapeRegistryEntry>,
+    private propertyGenerator = new PropertyGenerator()
   ) {}
 
-
   generate(shape: ShapeModel): string | undefined {
-  const imports = new Set<string>();
+    const imports = new Set<string>();
 
-  const usage = {
-    objectMapping: false,
-    valueMapping: false,
-    termMapping: false
-  };
+    const usage = {
+      objectMapping: false,
+      valueMapping: false,
+      termMapping: false,
+    };
 
-  const generatedProperties = [...shape.properties]
-    .map(p => this.propertyGenerator.generateProperty(p, imports, this.shapeRegistry, usage))
-    .filter(p => p.trim().length > 0);
+    // ---------------- Generate properties ----------------
+    const generatedProperties = [...shape.properties]
+      .map((p) =>
+        this.propertyGenerator.generateProperty(
+          p,
+          imports,
+          this.shapeRegistry,
+          usage,
+          this.classPrefix // <-- pass prefix to property generator
+        )
+      )
+      .filter((p) => p.trim().length > 0);
 
-  // Skip file if no properties generated
-  if (generatedProperties.length === 0) {
-    return undefined;
+    // Skip file if no properties generated
+    if (generatedProperties.length === 0) {
+      // return undefined;
+    }
+
+    const properties = generatedProperties.join("\n");
+
+    // ---------------- RDF imports ----------------
+    const rdfImports = ["TermWrapper"];
+    if (usage.valueMapping) rdfImports.push("LiteralAs");
+    if (usage.termMapping) rdfImports.push("LiteralFrom");
+
+    imports.add(`import { ${rdfImports.join(", ")} } from "@rdfjs/wrapper";`);
+
+    // ---------------- Class name ----------------
+    const className = `${shape.codeIdentifier}`;
+
+    return [
+      ...[...imports].sort(),
+      ``,
+      `export class ${className} extends TermWrapper {`,
+      properties,
+      `}`,
+      ``,
+    ].join("\n");
   }
-
-  const properties = generatedProperties.join("");
-
-  const rdfImports = ["TermWrapper"];
-
-  if (usage.valueMapping) rdfImports.push("LiteralAs");
-  if (usage.termMapping) rdfImports.push("LiteralFrom");
-
-  imports.add(`import { ${rdfImports.join(", ")} } from "@rdfjs/wrapper";`);
-
-  return [
-    ...[...imports].sort(),
-    ``,
-    `export class ${shape.codeIdentifier} extends TermWrapper {`,
-    properties,
-    `}`,
-    ``
-  ].join("\n");
-}
 }
