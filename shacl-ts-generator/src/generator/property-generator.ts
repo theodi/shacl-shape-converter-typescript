@@ -58,17 +58,17 @@ export class PropertyGenerator {
       if (prop.cardinality.multiple) {
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
-    return this.objects(${propertyIri}, ObjectMapping.as(${codeIdentifier}), ObjectMapping.as(${codeIdentifier}));
+    return this.objects(${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }`;
       }
 
       // Single-valued nested property
       return `
   get ${identifier}(): ${codeIdentifier} | undefined {
-    return this.singularNullable(${propertyIri}, ObjectMapping.as(${codeIdentifier}), ObjectMapping.as(${codeIdentifier}));
+    return this.singularNullable(${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }
   set ${identifier}(value: ${codeIdentifier} | undefined) {
-    this.overwriteNullable(${propertyIri}, value, ObjectMapping.as(${codeIdentifier}));
+    this.overwriteNullable(${propertyIri}, value, TermAs.instance(${codeIdentifier}));
   }`;
     }
 
@@ -87,7 +87,7 @@ export class PropertyGenerator {
     if (prop.cardinality.multiple) {
       return `
   get ${identifier}(): Set<${baseType}> {
-    return this.objects(${propertyIri}, ${mapping}, TermMapping.${termMap});
+    return this.objects(${propertyIri}, ${mapping}, ${termMap});
   }`;
     }
 
@@ -106,7 +106,7 @@ export class PropertyGenerator {
     return this.${getterMethod}(${propertyIri}, ${mapping});
   }
   set ${identifier}(value: ${getSetType}) {
-    this.${setterMethod}(${propertyIri}, value, TermMapping.${termMap});
+    this.${setterMethod}(${propertyIri}, value, ${termMap});
   }`;
   }
 
@@ -122,27 +122,27 @@ export class PropertyGenerator {
 
   // ---------------- Mapping inference ----------------
   private inferMapping(prop: ShapePropertyModel): string {
-    if (!prop.datatypeConstraint) return "ValueMapping.literalToString";
+    if (!prop.datatypeConstraint) return "LiteralAs.string";
     const dt = prop.datatypeConstraint.toLowerCase();
-    if (dt.includes("anyuri")) return "ValueMapping.iriToString";
-    if (dt.includes("integer") || dt.includes("decimal")) return "ValueMapping.literalToNumber";
-    if (dt.includes("boolean")) return "ValueMapping.literalToBoolean";
-    if (dt.includes("date")) return "ValueMapping.literalToDate";
-    return "ValueMapping.literalToString";
+    if (dt.includes("anyuri")) return "LiteralAs.anyUriString";
+    if (dt.includes("integer") || dt.includes("decimal")) return "LiteralAs.number";
+    if (dt.includes("boolean")) return "LiteralAs.boolean";
+    if (dt.includes("date")) return "LiteralAs.date";
+    return "LiteralAs.string";
   }
 
   // ---------------- Term mapping ----------------
   private termMapping(type: string, prop: ShapePropertyModel): string {
-    if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) return "stringToIri";
+    if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) return "LiteralFrom.anyUriString";
     switch (type) {
       case "number":
-        return "numberToLiteral";
+        return "LiteralFrom.double";
       case "boolean":
-        return "booleanToLiteral";
+        return "LiteralFrom.boolean";
       case "Date":
-        return "dateToLiteral";
+        return "LiteralFrom.Date";
       default:
-        return "stringToLiteral";
+        return "LiteralFrom.string";
     }
   }
 }

@@ -49,11 +49,10 @@ export class ClassGenerator {
 
     // ---------------- RDF imports ----------------
     const rdfImports = ["TermWrapper"];
-    if (usage.valueMapping) rdfImports.push("ValueMapping");
-    if (usage.termMapping) rdfImports.push("TermMapping");
-    if (usage.objectMapping) rdfImports.push("ObjectMapping");
+    if (usage.valueMapping) rdfImports.push("LiteralAs");
+    if (usage.termMapping) rdfImports.push("LiteralFrom");
 
-    imports.add(`import { ${rdfImports.join(", ")} } from "rdfjs-wrapper";`);
+    imports.add(`import { ${rdfImports.join(", ")} } from "@rdfjs/wrapper";`);
 
     // ---------------- Class name ----------------
     const className = `${shape.codeIdentifier}`;
