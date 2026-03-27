@@ -16,7 +16,7 @@ export class PropertyGenerator {
    * @param imports Set of import statements
    * @param shapeRegistry Registry of shapes
    * @param usage Tracks which mappings are used
-   * @param classPrefix Optional prefix for class names
+   * @param classPrefix Optional prefix for class names 
    */
   generateProperty(
     prop: ShapePropertyModel,

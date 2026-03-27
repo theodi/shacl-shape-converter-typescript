@@ -13,7 +13,7 @@ export type ShapeRegistryEntry = {
 
 export class ClassGenerator {
   constructor(
-    private classPrefix: string = "",
+    private classPrefix: string = "", 
     private shapeRegistry?: Map<string, ShapeRegistryEntry>,
     private propertyGenerator = new PropertyGenerator()
   ) {}
