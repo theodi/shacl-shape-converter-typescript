@@ -1,4 +1,4 @@
-import { DatasetWrapper, LiteralAs, NamedNodeAs, NamedNodeFrom, TermAs, TermFrom, TermWrapper } from "@rdfjs/wrapper";
+import { DatasetWrapper, LiteralAs, NamedNodeAs, TermAs, TermFrom, TermWrapper } from "@rdfjs/wrapper";
 import type { CardinalityInfo } from "./cardinality.ts";
 import type { Term } from "@rdfjs/types";
 
@@ -144,4 +144,5 @@ export class ShapeModel extends TermWrapper {
       TermFrom.instance
     );
   }
+
 }

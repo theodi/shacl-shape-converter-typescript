@@ -11,14 +11,14 @@ export class NamingUtils {
     return NamingUtils.camelCase(name)
   }
 
-  private static pascalCase(text: string): string {
+  static pascalCase(text: string): string {
     const words = NamingUtils.splitWords(text)
     return words.map(w =>
       w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
     ).join("")
   }
 
-  private static camelCase(text: string): string {
+  static camelCase(text: string): string {
     const words = NamingUtils.splitWords(text)
 
     return words[0].toLowerCase() +
