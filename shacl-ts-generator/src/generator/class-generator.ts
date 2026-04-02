@@ -18,7 +18,28 @@ export class ClassGenerator {
     private propertyGenerator = new PropertyGenerator()
   ) {}
 
+  private isTargetOnlyShape(shape: ShapeModel): boolean {
+    const hasTargetSubjectsOf = shape.targetSubjectsOf.size > 0;
+  
+    const hasOtherTargets =
+      shape.targetObjectsOf.size > 0 ||
+      shape.targetClass.size > 0;
+  
+    const hasConstraints =
+      shape.properties.size > 0 ||
+      !!shape.class ||
+      !!shape.nodeKind ||
+      !!shape.datatype;
+  
+    return (hasTargetSubjectsOf || hasOtherTargets) && !hasConstraints;
+  }
+
   generate(shape: ShapeModel): string | undefined {
+
+    if (this.isTargetOnlyShape(shape)) {
+      return undefined;
+    }
+    
     const imports = new Set<string>();
 
     const usage = {
@@ -42,7 +63,7 @@ export class ClassGenerator {
 
     // Skip file if no properties generated
     if (generatedProperties.length === 0) {
-      // return undefined;
+      return undefined;
     }
 
     const properties = generatedProperties.join("\n");

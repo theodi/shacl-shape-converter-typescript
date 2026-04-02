@@ -16,6 +16,11 @@ export const SHACL = {
   value: "http://www.w3.org/ns/shacl#value",
   inversePath: "http://www.w3.org/ns/shacl#inversePath",
   in: "http://www.w3.org/ns/shacl#in",
+  targetSubjectsOf: "http://www.w3.org/ns/shacl#targetSubjectsOf",
+  targetObjectsOf: "http://www.w3.org/ns/shacl#targetObjectsOf",
+  targetClass: "http://www.w3.org/ns/shacl#targetClass",
+  nodeKind: "http://www.w3.org/ns/shacl#nodeKind",
+
 } as const;
 
 export class ShaclDataset extends DatasetWrapper {
@@ -128,21 +133,50 @@ export class ShapePropertyModel extends TermWrapper {
   }
 }
 
+
 export class ShapeModel extends TermWrapper {
-  get codeIdentifier(): string {
-    return this.singularNullable(SHACL.codeIdentifier, LiteralAs.string) || "noCodeIdentifier";
-  }
 
-  get name(): string {
-    return this.value.split(/[/#]/).pop() || "Unknown";
-  }
+    get codeIdentifier(): string {
+      return this.singularNullable(SHACL.codeIdentifier, LiteralAs.string) || "noCodeIdentifier";
+    }
 
-  get properties(): Set<ShapePropertyModel> {
-    return this.objects(
-      SHACL.property,
-      TermAs.instance(ShapePropertyModel),
-      TermFrom.instance
-    );
-  }
+    get name(): string {
+      return this.value.split(/[/#]/).pop() || "Unknown";
+    }
 
+    get properties(): Set<ShapePropertyModel> {
+      return this.objects(
+        SHACL.property,
+        TermAs.instance(ShapePropertyModel),
+        TermFrom.instance
+      );
+    }
+
+    // ---------------- Targets ----------------
+
+    get targetSubjectsOf(): Set<TermWrapper> {
+      return this.objects(SHACL.targetSubjectsOf, TermAs.instance(TermWrapper), TermFrom.instance);
+    }
+
+    get targetObjectsOf(): Set<TermWrapper> {
+      return this.objects(SHACL.targetObjectsOf, TermAs.instance(TermWrapper), TermFrom.instance);
+    }
+
+    get targetClass(): Set<TermWrapper> {
+      return this.objects(SHACL.targetClass, TermAs.instance(TermWrapper), TermFrom.instance);
+    }
+
+    get class(): string | undefined {
+       return this.singularNullable(SHACL.class, NamedNodeAs.string);
+    }
+  
+    get nodeKind(): string | undefined{
+      return this.singularNullable(SHACL.nodeKind, NamedNodeAs.string);
+    }
+  
+    /*
+    get datatype(): string | undefined {
+      return this.singularNullable(SHACL.datatype, NamedNodeAs.string);
+    }
+    */
 }
