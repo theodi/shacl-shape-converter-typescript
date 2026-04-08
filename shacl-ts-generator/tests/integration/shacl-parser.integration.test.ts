@@ -1,11 +1,11 @@
+import { describe, test } from "node:test"
+import assert from "node:assert"
 import path from "node:path"
-import { ShaclParser } from "../../src/parser/shacl-parser.js"
+import { ShaclParser } from "../../dist/parser/shacl-parser.js"
 
 describe("ShaclParser integration", () => {
-
-  const parser = new ShaclParser()
-
   test("should parse valid TTL file end-to-end", async () => {
+    const parser = new ShaclParser()
 
     const file = path.join(
       process.cwd(),
@@ -14,12 +14,15 @@ describe("ShaclParser integration", () => {
 
     const shapes = await parser.parse(file)
 
-    expect(shapes).toHaveLength(1)
+    // expect(shapes).toHaveLength(1)
+    assert.strictEqual(shapes.length, 1)
 
     const shape = shapes[0]
 
-    expect(shape.properties.size).toBe(2)
-    expect(shape.codeIdentifier).toBe("Person")
-  })
+    // expect(shape.properties.size).toBe(2)
+    assert.strictEqual(shape.properties.size, 2)
 
+    // expect(shape.codeIdentifier).toBe("Person")
+    assert.strictEqual(shape.codeIdentifier, "Person")
+  })
 })

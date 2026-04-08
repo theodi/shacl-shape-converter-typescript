@@ -1,9 +1,10 @@
+import test from "node:test"
+import assert from "node:assert"
 import { execa } from "execa"
 import path from "node:path"
 import fs from "node:fs"
 
 test("CLI should generate output files", async () => {
-
   const cli = path.join(
     process.cwd(),
     "dist/cli.js"
@@ -24,5 +25,6 @@ test("CLI should generate output files", async () => {
   // Verify file generation
   const files = fs.readdirSync(outputDir)
 
-  expect(files.length).toBeGreaterThan(0)
+  // expect(files.length).toBeGreaterThan(0)
+  assert.ok(files.length > 0)
 })

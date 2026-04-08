@@ -1,26 +1,41 @@
+import test from "node:test"
+import assert from "node:assert"
 import path from "node:path"
-import { ShaclParser } from "../../src/parser/shacl-parser.js"
+import fs from "node:fs"
+import { ShaclParser } from "../dist/parser/shacl-parser.js"
 
-describe("Fixture parsing", () => {
-
+test("should parse person shape", async (t) => {
   const parser = new ShaclParser()
 
-  test("should parse person shape", async () => {
+  const file = path.join(
+    process.cwd(),
+    "tests/fixtures/shacl/valid/person.ttl"
+  )
 
-    const file = path.join(
-      process.cwd(),
-      "tests/fixtures/shacl/valid/person.ttl"
-    )
+  // 1️⃣ Check file exists
+  if (!fs.existsSync(file)) {
+    throw new Error(`Fixture file not found: ${file}`)
+  }
 
-    const shapes = await parser.parse(file)
+  // 2️⃣ Parse file
+  let shapes
+  try {
+    shapes = await parser.parse(file)
+  } catch (err) {
+    throw new Error(`Parsing failed for file ${file}: ${(err as Error).message}`)
+  }
 
-    expect(shapes.length).toBeGreaterThan(0)
+  // 3️⃣ Ensure shapes exist
+  assert.ok(shapes.length > 0, `Expected at least 1 shape, but got ${shapes.length}`)
 
-    const person = shapes.find(
-      s => s.name === "PersonShape"
-    )
+  // 4️⃣ Find PersonShape
+  const person = shapes.find(s => s.name === "PersonShape")
+  assert.ok(person, `PersonShape not found in parsed shapes: ${JSON.stringify(shapes.map(s => s.name))}`)
 
-    expect(person?.codeIdentifier).toBe("Person")
-  })
+  // 5️⃣ Check codeIdentifier
+  if (person?.codeIdentifier !== "Person") {
+    throw new Error(`PersonShape codeIdentifier expected "Person", got "${person?.codeIdentifier}"`)
+  }
 
+  console.log(`✅ Parsed ${shapes.length} shapes, PersonShape codeIdentifier = ${person?.codeIdentifier}`)
 })
