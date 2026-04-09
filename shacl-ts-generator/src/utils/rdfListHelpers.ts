@@ -30,11 +30,3 @@ export function firstNamedNodeInList(root: Term, dataset: DatasetCore<Quad>): st
 
   return undefined;
 }
-
-
-function getFirstRdfListItem(listNode: any, store: any): string | null {
-  // listNode is the sh:and object (e.g., _:b0)
-  const firstTriple = store.getQuads(listNode, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first', null, null)[0];
-  if (!firstTriple) return null;
-  return firstTriple.object.value; // returns the first named node URI
-}

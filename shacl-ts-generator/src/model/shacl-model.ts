@@ -174,15 +174,12 @@ export class ShapeModel extends TermWrapper {
   
   get extends(): string[] {
   
-
   if (!this.dataset) {
-  
     return [];
   }
 
   const subjectTerm = getSubjectTerm(this);
   if (!subjectTerm) {
-
     return [];
   }
 
