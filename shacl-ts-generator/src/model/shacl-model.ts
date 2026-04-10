@@ -1,6 +1,9 @@
 import { DatasetWrapper, LiteralAs, NamedNodeAs, TermAs, TermFrom, TermWrapper } from "@rdfjs/wrapper";
 import type { CardinalityInfo } from "./cardinality.ts";
 import type { Term } from "@rdfjs/types";
+import { firstNamedNodeInList } from "../utils/rdfListHelpers.js"; 
+
+
 
 export const SHACL = {
   codeIdentifier: "http://www.w3.org/ns/shacl#codeIdentifier",
@@ -16,7 +19,30 @@ export const SHACL = {
   value: "http://www.w3.org/ns/shacl#value",
   inversePath: "http://www.w3.org/ns/shacl#inversePath",
   in: "http://www.w3.org/ns/shacl#in",
+  and: "http://www.w3.org/ns/shacl#and",
 } as const;
+
+function unwrapTerm(tw: any): Term | undefined {
+  let current = tw;
+  while (current) {
+    if ("term" in current) return current.term as Term;
+    if ("original" in current) current = current.original;
+    else break;
+  }
+  return undefined;
+}
+
+function getSubjectTerm(wrapper: TermWrapper): Term | undefined {
+  let current: any = wrapper;
+  while (current) {
+    if (current.termType) {
+      // It's a real RDFJS Term
+      return current as Term;
+    }
+    current = current.original;
+  }
+  return undefined;
+}
 
 export class ShaclDataset extends DatasetWrapper {
   get nodeShapes(): Iterable<ShapeModel> {
@@ -144,5 +170,57 @@ export class ShapeModel extends TermWrapper {
       TermFrom.instance
     );
   }
+
+  
+  get extends(): string[] {
+  
+  if (!this.dataset) {
+    return [];
+  }
+
+  const subjectTerm = getSubjectTerm(this);
+  if (!subjectTerm) {
+    return [];
+  }
+
+  const shAndTerm = this.factory.namedNode(SHACL.and);
+
+  const quads = this.dataset.match(subjectTerm, shAndTerm, null);
+
+  if (quads.size === 0) {
+    return [];
+  }
+
+  for (const quad of quads) {
+    const object = quad.object;
+
+    if (object.termType === "NamedNode") {
+      console.log("    - NamedNode found:", object.value);
+      return [object.value];
+    }
+
+    if (object.termType === "BlankNode") {
+
+      const firstNode = firstNamedNodeInList(object, this.dataset);
+      
+      if (firstNode) return [firstNode];
+    }
+  }
+
+  console.log("[DEBUG] No valid parent shape found in sh:and");
+  return [];
+}
+
+  get parentShape(): string | undefined {
+    return this.extends[0];
+  }
+
+  get hasInheritance(): boolean {
+    return !!this.parentShape;
+  }
+  
+
+
+
 
 }
