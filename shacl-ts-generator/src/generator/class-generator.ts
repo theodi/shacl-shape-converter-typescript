@@ -48,7 +48,7 @@ export class ClassGenerator {
     const properties = generatedProperties.join("\n");
 
     // ---------------- RDF imports ----------------
-    const rdfImports = ["TermWrapper"];
+    const rdfImports = ["TermWrapper", "SetFrom", "OptionalFrom", "OptionalAs"];
     if (usage) {
       const mappingToImports: Record<keyof typeof usage, string[]> = {
         valueMapping: ["LiteralAs"],
