@@ -113,10 +113,10 @@ export class PropertyGenerator {
 
       return `
   get ${identifier}(): ${codeIdentifier} | undefined {
-    return OptionalFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}));
+    return this.singularNullable(${propertyIri}, TermAs.instance(${codeIdentifier}));
   }
   set ${identifier}(value: ${codeIdentifier} | undefined) {
-    OptionalAs.object(this, ${propertyIri}, value, TermAs.instance(${codeIdentifier}));
+    this.overwriteNullable(${propertyIri}, value, TermAs.instance(${codeIdentifier}));
   }`;
     }
 
@@ -144,27 +144,27 @@ export class PropertyGenerator {
     if (prop.cardinality.multiple) {
       return `
   get ${identifier}(): Set<${baseType}> {
-    return SetFrom.subjectPredicate(this, ${propertyIri}, ${mapping}, ${termMap});
+    return this.objects(${propertyIri}, ${mapping}, ${termMap});
   }`;
     }
 
     // ---------------- Single-valued ----------------
     const getterMethod =
       prop.cardinality.required && !prop.cardinality.multiple
-        ? "RequiredFrom.subjectPredicate"
-        : "OptionalFrom.subjectPredicate";
+        ? "singular"
+        : "singularNullable";
 
     const setterMethod =
       prop.cardinality.required && !prop.cardinality.multiple
-        ? "RequiredAs.object"
-        : "OptionalAs.object";
+        ? "overwrite"
+        : "overwriteNullable";
 
     return `
   get ${identifier}(): ${getSetType} {
-    return ${getterMethod}(this, ${propertyIri}, ${mapping});
+    return this.${getterMethod}(${propertyIri}, ${mapping});
   }
   set ${identifier}(value: ${getSetType}) {
-    ${setterMethod}(this, ${propertyIri}, value, ${termMap});
+    this.${setterMethod}(${propertyIri}, value, ${termMap});
   }`;
   }
 

@@ -1,4 +1,4 @@
-import { DatasetWrapper, LiteralAs, NamedNodeAs, OptionalFrom, RequiredFrom, SetFrom, TermAs, TermFrom, TermWrapper } from "@rdfjs/wrapper";
+import { DatasetWrapper, LiteralAs, NamedNodeAs, TermAs, TermFrom, TermWrapper } from "@rdfjs/wrapper";
 import type { CardinalityInfo } from "./cardinality.ts";
 import type { Term } from "@rdfjs/types";
 
@@ -26,39 +26,39 @@ export class ShaclDataset extends DatasetWrapper {
 
 export class ShapePropertyModel extends TermWrapper {
   get path(): string | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.path, NamedNodeAs.string);
+    return this.singularNullable(SHACL.path, NamedNodeAs.string);
   }
 
   get codeIdentifier(): string {
-    return RequiredFrom.subjectPredicate(this, SHACL.codeIdentifier, LiteralAs.string);
+    return this.singular(SHACL.codeIdentifier, LiteralAs.string);
   }
 
   get name(): string {
-    return RequiredFrom.subjectPredicate(this, SHACL.name, LiteralAs.string);
+    return this.singular(SHACL.name, LiteralAs.string);
   }
 
   get datatypeConstraint(): string | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.datatype, NamedNodeAs.string);
+    return this.singularNullable(SHACL.datatype, NamedNodeAs.string);
   }
 
   get class(): string | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.class, NamedNodeAs.string);
+    return this.singularNullable(SHACL.class, NamedNodeAs.string);
   }
 
   get fixedValue(): string | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.value, NamedNodeAs.string);
+    return this.singularNullable(SHACL.value, NamedNodeAs.string);
   }
 
   get inversePath(): string | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.inversePath, NamedNodeAs.string);
+    return this.singularNullable(SHACL.inversePath, NamedNodeAs.string);
   }
 
   get minCount(): number | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.minCount, LiteralAs.number);
+    return this.singularNullable(SHACL.minCount, LiteralAs.number);
   }
 
   get maxCount(): number | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.maxCount, LiteralAs.number);
+    return this.singularNullable(SHACL.maxCount, LiteralAs.number);
   }
 
   get cardinality(): CardinalityInfo {
@@ -76,7 +76,7 @@ export class ShapePropertyModel extends TermWrapper {
   }
 
   get nodeTerm(): Term | undefined {
-    return OptionalFrom.subjectPredicate(this, SHACL.node, TermAs.term);
+    return this.singularNullable(SHACL.node, TermAs.term);
   }
 
   get nodeIri(): string | undefined {
@@ -130,7 +130,7 @@ export class ShapePropertyModel extends TermWrapper {
 
 export class ShapeModel extends TermWrapper {
   get codeIdentifier(): string {
-    return OptionalFrom.subjectPredicate(this, SHACL.codeIdentifier, LiteralAs.string) || "noCodeIdentifier";
+    return this.singularNullable(SHACL.codeIdentifier, LiteralAs.string) || "noCodeIdentifier";
   }
 
   get name(): string {
@@ -138,8 +138,7 @@ export class ShapeModel extends TermWrapper {
   }
 
   get properties(): Set<ShapePropertyModel> {
-    return SetFrom.subjectPredicate(
-      this,
+    return this.objects(
       SHACL.property,
       TermAs.instance(ShapePropertyModel),
       TermFrom.instance
