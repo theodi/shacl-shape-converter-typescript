@@ -54,25 +54,38 @@ export class ClassGenerator {
         valueMapping: ["LiteralAs"],
         termMapping: ["LiteralFrom"],
         objectMapping: ["TermAs", "TermFrom"]
-    };
+      };
 
-    for (const key in mappingToImports) {
-      if (usage[key as keyof typeof usage]) {
-        rdfImports.push(...mappingToImports[key as keyof typeof usage]);
+      for (const key in mappingToImports) {
+        if (usage[key as keyof typeof usage]) {
+          rdfImports.push(...mappingToImports[key as keyof typeof usage]);
+        }
+      }
     }
-  }
-}
     imports.add(`import { ${rdfImports.join(", ")} } from "@rdfjs/wrapper";`);
-  
-
 
     // ---------------- Class name ----------------
     const className = `${shape.codeIdentifier}`;
 
+    // Determine base class (TermWrapper if no inheritance)
+    let baseClass = "TermWrapper";
+    if (shape.hasInheritance && shape.parentShape) {
+      
+      if (this.shapeRegistry?.has(shape.parentShape)) {
+        baseClass = this.shapeRegistry.get(shape.parentShape)!.codeIdentifier;
+        
+        imports.add(`import { ${baseClass} } from './${baseClass}.js';`);
+      } else {
+        
+        baseClass = shape.parentShape;
+      }
+}
+      
+
     return [
       ...[...imports].sort(),
       ``,
-      `export class ${className} extends TermWrapper {`,
+      `export class ${className} extends ${baseClass} {`,
       properties,
       `}`,
       ``,

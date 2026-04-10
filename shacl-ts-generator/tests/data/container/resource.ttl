@@ -1,0 +1,61 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix posix: <http://www.w3.org/ns/posix/stat#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+
+@prefix resource_shape: <https://solidproject.org/shapes/resource#> .
+
+resource_shape:ResourceShape a sh:NodeShape ;
+    dc:source <https://github.com/solid/object/blob/main/src/solid/Resource.ts> ; 
+    prov:wasDerivedFrom <https://github.com/solid/object/blob/main/src/solid/Resource.ts> ; 
+    sh:name "Resource";
+    sh:codeIdentifier "Resource";
+    dct:created "2026-03-18"^^xsd:date ;
+    vs:term_status "testing";
+
+    sh:property [
+        sh:path dc:title ;
+        sh:codeIdentifier "title" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path sh:name ;
+        sh:codeIdentifier "label" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path dc:modified ;
+        sh:codeIdentifier "modified" ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path posix:mtime ;
+        sh:codeIdentifier "mtime" ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path posix:size ;
+        sh:codeIdentifier "size" ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1
+    ] ;
+
+    sh:property [
+        sh:path rdf:type ;
+        sh:codeIdentifier "type" ;
+        sh:nodeKind sh:IRI ;
+    ] .
+

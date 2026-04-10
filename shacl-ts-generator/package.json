@@ -17,6 +17,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
+    "@rdfjs/data-model": "^2.1.1",
     "@rdfjs/types": "^2.0.1",
     "@rdfjs/wrapper": "^0.33.0",
     "commander": "^14.0.3",
