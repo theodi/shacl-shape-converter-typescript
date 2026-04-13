@@ -35,7 +35,8 @@ export class ClassGenerator {
           imports,
           this.shapeRegistry,
           usage,
-          this.classPrefix // <-- pass prefix to property generator
+          this.classPrefix,
+          shape.codeIdentifier
         )
       )
       .filter((p) => p.trim().length > 0);

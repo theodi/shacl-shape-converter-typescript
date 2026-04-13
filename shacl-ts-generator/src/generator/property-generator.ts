@@ -64,7 +64,8 @@ export class PropertyGenerator {
     imports?: Set<string>,
     shapeRegistry?: Map<string, ShapeRegistryEntry>,
     usage?: MappingUsage,
-    classPrefix: string = ""
+    classPrefix: string = "",
+    currentClassName?: string
   ): string {
     const identifier = prop.codeIdentifier;
 
@@ -101,8 +102,13 @@ export class PropertyGenerator {
       if (usage) usage.objectMapping = true;
 
       if (imports) {
-        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
-      }
+        // prevent self-imports
+        const isSelfReference = currentClassName === codeIdentifier;
+
+        if (!isSelfReference) {
+          imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
+        }
+    }
 
       if (prop.cardinality.multiple) {
         return `
