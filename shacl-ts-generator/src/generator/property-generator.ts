@@ -8,6 +8,9 @@ type MappingUsage = {
   objectMapping?: boolean;
   valueMapping?: boolean;
   termMapping?: boolean;
+  set?: boolean;
+  optional?: boolean;
+  required?: boolean;
 };
 
 // ------------------------
@@ -111,6 +114,7 @@ export class PropertyGenerator {
     }
 
       if (prop.cardinality.multiple) {
+        if (usage) usage.set = true;
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
     return SetFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
@@ -148,13 +152,23 @@ export class PropertyGenerator {
 
     // ---------------- Multi-valued ----------------
     if (prop.cardinality.multiple) {
+      if (usage) usage.set = true;
       return `
   get ${identifier}(): Set<${baseType}> {
     return SetFrom.subjectPredicate(this, ${propertyIri}, ${mapping}, ${termMap});
   }`;
     }
 
+    if (usage) {
+      if (prop.cardinality.required) {
+        usage.required = true;
+      } else {
+        usage.optional = true;
+      }
+    }
+
     // ---------------- Single-valued ----------------
+    
     const getterMethod =
       prop.cardinality.required && !prop.cardinality.multiple
         ? "RequiredFrom.subjectPredicate"

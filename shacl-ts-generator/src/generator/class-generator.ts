@@ -25,6 +25,9 @@ export class ClassGenerator {
       objectMapping: false,
       valueMapping: false,
       termMapping: false,
+      set: false,
+      optional: false,
+      required: false,
     };
 
     // ---------------- Generate properties ----------------
@@ -49,12 +52,15 @@ export class ClassGenerator {
     const properties = generatedProperties.join("\n");
 
     // ---------------- RDF imports ----------------
-    const rdfImports = ["TermWrapper", "SetFrom", "OptionalFrom", "OptionalAs", "RequiredFrom", "RequiredAs"];
+    const rdfImports = ["TermWrapper"];
     if (usage) {
       const mappingToImports: Record<keyof typeof usage, string[]> = {
         valueMapping: ["LiteralAs"],
         termMapping: ["LiteralFrom"],
-        objectMapping: ["TermAs", "TermFrom"]
+        objectMapping: ["TermAs", "TermFrom"],
+        set: ["SetFrom"],
+        optional: ["OptionalFrom", "OptionalAs"],
+        required: ["RequiredFrom", "RequiredAs"],
       };
 
       for (const key in mappingToImports) {
