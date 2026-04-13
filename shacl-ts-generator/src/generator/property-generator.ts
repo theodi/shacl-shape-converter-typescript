@@ -116,7 +116,7 @@ export class PropertyGenerator {
     return OptionalFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}));
   }
   set ${identifier}(value: ${codeIdentifier} | undefined) {
-    OptionalAs.object(this, ${propertyIri}, value, TermAs.instance(${codeIdentifier}));
+    OptionalAs.object(this, ${propertyIri}, value, TermFrom.instance);
   }`;
     }
 
