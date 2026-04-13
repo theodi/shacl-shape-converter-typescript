@@ -107,7 +107,7 @@ export class PropertyGenerator {
       if (prop.cardinality.multiple) {
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
-    return this.objects(${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
+    return SetFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }`;
       }
 
