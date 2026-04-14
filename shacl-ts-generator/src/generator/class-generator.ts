@@ -1,15 +1,8 @@
 // src/generator/class-generator.ts
 import { ShapeModel } from "../model/shacl-model.js";
 import { PropertyGenerator } from "./property-generator.js";
+import type { ShapeRegistryEntry } from "../model/generator.js";
 
-/**
- * Registry entry type for each shape
- */
-export type ShapeRegistryEntry = {
-  shape: ShapeModel;
-  fileName: string; // filename containing the shape
-  codeIdentifier: string; // shape's code identifier
-};
 
 export class ClassGenerator {
   constructor(
@@ -30,6 +23,7 @@ export class ClassGenerator {
       required: false,
     };
 
+    console.log(`Generating class for shape: ${shape.codeIdentifier}`);
     // ---------------- Generate properties ----------------
     const generatedProperties = [...shape.properties]
       .map((p) =>

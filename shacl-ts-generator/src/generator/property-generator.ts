@@ -1,17 +1,29 @@
 // src/generator/property-generator.ts
-import { ShapePropertyModel, SHACL } from "../model/shacl-model.js";
-import { generatePropertyType } from "./type-generator.js";
-import type { ShapeRegistryEntry } from "./class-generator.js";
-import type { Term } from "@rdfjs/types";
+import { ShapePropertyModel } from "../model/shacl-model.js";
 
-type MappingUsage = {
-  objectMapping?: boolean;
-  valueMapping?: boolean;
-  termMapping?: boolean;
-  set?: boolean;
-  optional?: boolean;
-  required?: boolean;
-};
+import type { CardinalityInfo } from "../model/cardinality.js";
+import type { ShapeRegistryEntry,  MappingUsage } from "../model/generator.js";
+
+function resolveCardinality(cardinality: CardinalityInfo) {
+  const isRequired = cardinality.required && !cardinality.multiple;
+
+  return {
+    isRequired,
+    getter: isRequired
+      ? "RequiredFrom.subjectPredicate"
+      : "OptionalFrom.subjectPredicate",
+    setter: isRequired
+      ? "RequiredAs.object"
+      : "OptionalAs.object",
+  };
+}
+
+function resolveType(baseType: string, cardinality: CardinalityInfo) {
+  if (cardinality.multiple) {
+    return `Set<${baseType}>`;
+  }
+  return cardinality.required ? baseType : `${baseType} | undefined`;
+}
 
 // ------------------------
 // Detect simple named node paths
@@ -40,25 +52,8 @@ function isSimpleNamedNodePath(path: any): boolean {
 
 export class PropertyGenerator {
 
-  // ---------------- Check for sh:in ----------------
-  private hasShIn(prop: ShapePropertyModel): boolean {
-    // Identity functions typed to Term to avoid 'any'
-    const values = (prop as any).objects?.(
-      SHACL.in,
-      (t: Term) => t,
-      (t: Term) => t
-    );
-    return values && values.size > 0;
-  }
-
   // ---------------- NamedNode detection ----------------
   private isNamedNodeProperty(prop: ShapePropertyModel): boolean {
-    if (this.hasShIn(prop)) {
-      console.warn(
-        `Skipping property "${prop.codeIdentifier}" because it uses sh:in, which is not supported.`
-      );
-      return false;
-    }
     return !!(prop.class || prop.nodeTerm);
   }
 
@@ -73,14 +68,17 @@ export class PropertyGenerator {
     const identifier = prop.codeIdentifier;
 
     // ---------------- Skip sh:in ----------------
-    if (this.hasShIn(prop)) {
+    if (prop.hasIn) {
+      console.warn(
+        `Skipping property "${prop.codeIdentifier}" because sh:in is not supported.`
+      );
       return ""; // do not generate code for sh:in properties
     }
 
     // ---------------- Skip complex or blank-node paths ----------------
     if (!prop.path || !isSimpleNamedNodePath(prop.path.toString())) {
       console.warn(
-        `Skipping property "${prop.codeIdentifier}" because sh:path is complex or a blank node: ${prop.path}`
+        `Skipping property ${prop.codeIdentifier} because sh:path is complex or a blank node: ${prop.path}`
       );
       return "";
     }
@@ -111,24 +109,40 @@ export class PropertyGenerator {
         if (!isSelfReference) {
           imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.js';`);
         }
-    }
+      }
 
       if (prop.cardinality.multiple) {
-        if (usage) usage.set = true;
+        if (usage) {
+          usage.set = true;
+        }
+
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
     return SetFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }`;
       }
 
+      if (usage) {
+        if (prop.cardinality.required) {
+          usage.required = true;
+        } else {
+          usage.optional = true;
+        }
+      }
+
+      const { getter, setter } = resolveCardinality(prop.cardinality);
+      const nestedType = resolveType(codeIdentifier, prop.cardinality);
+      
+
       return `
-  get ${identifier}(): ${codeIdentifier} | undefined {
-    return OptionalFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}));
+  get ${identifier}(): ${nestedType} {
+    return ${getter}(this, ${propertyIri}, TermAs.instance(${codeIdentifier}));
   }
-  set ${identifier}(value: ${codeIdentifier} | undefined) {
-    OptionalAs.object(this, ${propertyIri}, value, TermFrom.instance);
+  set ${identifier}(value: ${nestedType}) {
+    ${setter}(this, ${propertyIri}, value, TermFrom.instance);
   }`;
     }
+      
 
     // ---------------- Primitive / NamedNode property ----------------
     const isNamedNode = this.isNamedNodeProperty(prop);
@@ -136,7 +150,6 @@ export class PropertyGenerator {
     const baseType = this.inferType(prop);
     const mapping = this.inferMapping(prop, isNamedNode);
     const termMap = this.termMapping(baseType, prop, isNamedNode);
-    const getSetType = generatePropertyType(baseType, prop.cardinality);
 
     if (usage) {
       usage.valueMapping = true;
@@ -147,12 +160,14 @@ export class PropertyGenerator {
     if (imports) {
       if (isNamedNode) {
         imports.add(`import { NamedNodeAs, NamedNodeFrom } from "@rdfjs/wrapper";`);
-      } 
+      }
     }
 
     // ---------------- Multi-valued ----------------
     if (prop.cardinality.multiple) {
-      if (usage) usage.set = true;
+      if (usage) {
+          usage.set = true;
+        }
       return `
   get ${identifier}(): Set<${baseType}> {
     return SetFrom.subjectPredicate(this, ${propertyIri}, ${mapping}, ${termMap});
@@ -163,28 +178,21 @@ export class PropertyGenerator {
       if (prop.cardinality.required) {
         usage.required = true;
       } else {
-        usage.optional = true;
+          usage.optional = true;
       }
     }
 
     // ---------------- Single-valued ----------------
-    
-    const getterMethod =
-      prop.cardinality.required && !prop.cardinality.multiple
-        ? "RequiredFrom.subjectPredicate"
-        : "OptionalFrom.subjectPredicate";
 
-    const setterMethod =
-      prop.cardinality.required && !prop.cardinality.multiple
-        ? "RequiredAs.object"
-        : "OptionalAs.object";
+    const { getter, setter } = resolveCardinality(prop.cardinality);
+    const primitiveType = resolveType(baseType, prop.cardinality);
 
     return `
-  get ${identifier}(): ${getSetType} {
-    return ${getterMethod}(this, ${propertyIri}, ${mapping});
+  get ${identifier}(): ${primitiveType} {
+    return ${getter}(this, ${propertyIri}, ${mapping});
   }
-  set ${identifier}(value: ${getSetType}) {
-    ${setterMethod}(this, ${propertyIri}, value, ${termMap});
+  set ${identifier}(value: ${primitiveType}) {
+    ${setter}(this, ${propertyIri}, value, ${termMap});
   }`;
   }
 

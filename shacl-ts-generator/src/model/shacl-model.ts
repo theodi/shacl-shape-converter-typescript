@@ -22,15 +22,7 @@ export const SHACL = {
   and: "http://www.w3.org/ns/shacl#and",
 } as const;
 
-function unwrapTerm(tw: any): Term | undefined {
-  let current = tw;
-  while (current) {
-    if ("term" in current) return current.term as Term;
-    if ("original" in current) current = current.original;
-    else break;
-  }
-  return undefined;
-}
+
 
 function getSubjectTerm(wrapper: TermWrapper): Term | undefined {
   let current: any = wrapper;
@@ -123,6 +115,10 @@ export class ShapePropertyModel extends TermWrapper {
 
   get isBlankNode(): boolean {
     return this.nodeTerm?.termType === "BlankNode";
+  }
+
+  get hasIn(): boolean {
+    return SetFrom.subjectPredicate(this, SHACL.in, TermAs.term, TermFrom.itself).size > 0;
   }
 
   get nestedClassName(): string | undefined {
