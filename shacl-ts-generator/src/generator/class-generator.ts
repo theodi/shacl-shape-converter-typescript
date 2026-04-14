@@ -1,15 +1,8 @@
 // src/generator/class-generator.ts
 import { ShapeModel } from "../model/shacl-model.js";
 import { PropertyGenerator } from "./property-generator.js";
+import type { ShapeRegistryEntry } from "../model/generator.js";
 
-/**
- * Registry entry type for each shape
- */
-export type ShapeRegistryEntry = {
-  shape: ShapeModel;
-  fileName: string; // filename containing the shape
-  codeIdentifier: string; // shape's code identifier
-};
 
 export class ClassGenerator {
   constructor(
@@ -25,8 +18,12 @@ export class ClassGenerator {
       objectMapping: false,
       valueMapping: false,
       termMapping: false,
+      set: false,
+      optional: false,
+      required: false,
     };
 
+    console.log(`Generating class for shape: ${shape.codeIdentifier}`);
     // ---------------- Generate properties ----------------
     const generatedProperties = [...shape.properties]
       .map((p) =>
@@ -49,12 +46,15 @@ export class ClassGenerator {
     const properties = generatedProperties.join("\n");
 
     // ---------------- RDF imports ----------------
-    const rdfImports = ["TermWrapper", "SetFrom", "OptionalFrom", "OptionalAs", "RequiredFrom", "RequiredAs"];
+    const rdfImports = ["TermWrapper"];
     if (usage) {
       const mappingToImports: Record<keyof typeof usage, string[]> = {
         valueMapping: ["LiteralAs"],
         termMapping: ["LiteralFrom"],
-        objectMapping: ["TermAs", "TermFrom"]
+        objectMapping: ["TermAs", "TermFrom"],
+        set: ["SetFrom"],
+        optional: ["OptionalFrom", "OptionalAs"],
+        required: ["RequiredFrom", "RequiredAs"],
       };
 
       for (const key in mappingToImports) {

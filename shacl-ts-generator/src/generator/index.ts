@@ -3,7 +3,9 @@ import path from "path";
 import { ShaclParser } from "../parser/shacl-parser.js";
 import { ClassGenerator } from "./class-generator.js";
 import { DatasetGenerator } from "./dataset-generator.js";
-import type { ShapeModel } from "../model/shacl-model.js";
+
+import type { ShapeRegistryEntry } from "../model/generator.js";
+
 import { NamingUtils } from "../utils/naming.js";
 /**
  * Generates TypeScript classes from SHACL shapes, resolving nested shape imports
@@ -22,14 +24,9 @@ export async function generateFromShacl(
   // --------------------------------------------------
   const stat = await fs.stat(input);
 
-  type ShapeEntry = {
-    shape: ShapeModel;
-    fileName: string;
-    codeIdentifier: string;
-    prefix: string;
-  };
 
-  const shapes: ShapeEntry[] = [];
+
+  const shapes: ShapeRegistryEntry[] = [];
   const datasetPrefixes = new Set<string>();
 
   if (stat.isDirectory()) {
@@ -77,11 +74,6 @@ export async function generateFromShacl(
   // --------------------------------------------------
   // STEP 2: Build shape registry (codeIdentifier → shape + filename)
   // --------------------------------------------------
-  type ShapeRegistryEntry = {
-    shape: ShapeModel;
-    fileName: string;
-    codeIdentifier: string;
-  };
 
   const shapeRegistry = new Map<string, ShapeRegistryEntry>();
   for (const entry of shapes) {
@@ -89,6 +81,7 @@ export async function generateFromShacl(
       shape: entry.shape,
       fileName: entry.fileName,
       codeIdentifier: entry.codeIdentifier,
+      prefix: entry.prefix,
     });
   }
 
