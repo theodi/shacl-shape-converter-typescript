@@ -4,6 +4,9 @@ import { ShapePropertyModel } from "../model/shacl-model.js";
 import type { CardinalityInfo } from "../model/cardinality.js";
 import type { ShapeRegistryEntry,  MappingUsage } from "../model/generator.js";
 
+import { XSD } from "../vocab/xsd.js";
+
+
 function resolveCardinality(cardinality: CardinalityInfo) {
   const isRequired = cardinality.required && !cardinality.multiple;
 
@@ -196,30 +199,54 @@ export class PropertyGenerator {
   }`;
   }
 
+  
+
   // ---------------- Type inference ----------------
   private inferType(prop: ShapePropertyModel): string {
     if (!prop.datatypeConstraint) return "string";
-    const dt = prop.datatypeConstraint.toLowerCase();
-    if (dt.includes("integer") || dt.includes("decimal")) return "number";
-    if (dt.includes("boolean")) return "boolean";
-    if (dt.includes("date")) return "Date";
-    return "string";
+    
+    switch (prop.datatypeConstraint) {
+      case XSD.anyURI: 
+        return "string";
+      case XSD.string:
+          return "string";
+      case XSD.boolean: 
+        return "boolean";
+      case XSD.integer: 
+        return "number";
+      case XSD.dateTime: 
+        return "date";
+      default: 
+        return "string";
+    }
   }
 
   // ---------------- Mapping inference ----------------
+  
   private inferMapping(prop: ShapePropertyModel, isNamedNode: boolean): string {
     if (!prop.datatypeConstraint) {
       return isNamedNode ? "NamedNodeAs.string" : "LiteralAs.string";
     }
 
-    const dt = prop.datatypeConstraint.toLowerCase();
+    switch (prop.datatypeConstraint) {
+      case XSD.anyURI:
+        return "LiteralAs.string";
 
-    if (dt.includes("anyuri")) return "LiteralAs.string";
-    if (dt.includes("integer") || dt.includes("decimal")) return "LiteralAs.number";
-    if (dt.includes("boolean")) return "LiteralAs.boolean";
-    if (dt.includes("date")) return "LiteralAs.date";
+      case XSD.string:
+        return "LiteralAs.string";
 
-    return "LiteralAs.string";
+      case XSD.boolean:
+        return "LiteralAs.boolean";
+
+      case XSD.integer:
+        return "LiteralAs.number";
+
+      case XSD.dateTime:
+        return "LiteralAs.date";
+
+      default:
+        return "LiteralAs.string";
+    }
   }
 
   // ---------------- Term mapping ----------------
@@ -235,7 +262,7 @@ export class PropertyGenerator {
     switch (type) {
       case "number": return "LiteralFrom.double";
       case "boolean": return "LiteralFrom.boolean";
-      case "Date": return "LiteralFrom.date";
+      case "date": return "LiteralFrom.date";
       default: return "LiteralFrom.string";
     }
   }
