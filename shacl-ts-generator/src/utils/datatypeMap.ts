@@ -5,7 +5,7 @@ export const datatypeMap = {
   [XSD.integer]: {
     type: "number",
     as: "LiteralAs.number",
-    from: "LiteralFrom.number",
+    from: "LiteralFrom.double",
   },
   [XSD.double]: {
     type: "number",
