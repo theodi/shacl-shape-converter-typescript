@@ -6,7 +6,7 @@ import type { ShapeRegistryEntry,  MappingUsage } from "../model/generator.js";
 
 import { datatypeMap } from "../utils/datatypeMap.js";
 import { numericDatatypes, dateDatatypes, integerDatatypes} from "../utils/datatypeMap.js";
-
+import { generatePropertyType } from "./type-generator.js";
 
 function resolveCardinality(cardinality: CardinalityInfo) {
   const isRequired = cardinality.required && !cardinality.multiple;
@@ -20,13 +20,6 @@ function resolveCardinality(cardinality: CardinalityInfo) {
       ? "RequiredAs.object"
       : "OptionalAs.object",
   };
-}
-
-function resolveType(baseType: string, cardinality: CardinalityInfo) {
-  if (cardinality.multiple) {
-    return `Set<${baseType}>`;
-  }
-  return cardinality.required ? baseType : `${baseType} | undefined`;
 }
 
 // ------------------------
@@ -168,7 +161,7 @@ export class PropertyGenerator {
       }
 
       const { getter, setter } = resolveCardinality(prop.cardinality);
-      const nestedType = resolveType(codeIdentifier, prop.cardinality);
+      const nestedType = generatePropertyType(codeIdentifier, prop.cardinality);
       
       return `
   get ${identifier}(): ${nestedType} {
@@ -222,7 +215,7 @@ export class PropertyGenerator {
     // ---------------- Single-valued ----------------
 
     const { getter, setter } = resolveCardinality(prop.cardinality);
-    const primitiveType = resolveType(baseType, prop.cardinality);
+    const primitiveType = generatePropertyType(baseType, prop.cardinality);
 
     return `
   get ${identifier}(): ${primitiveType} {
