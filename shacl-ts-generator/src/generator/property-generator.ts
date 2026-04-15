@@ -4,6 +4,10 @@ import { ShapePropertyModel } from "../model/shacl-model.js";
 import type { CardinalityInfo } from "../model/cardinality.js";
 import type { ShapeRegistryEntry,  MappingUsage } from "../model/generator.js";
 
+import { datatypeMap } from "../utils/datatypeMap.js";
+import { numericDatatypes, dateDatatypes, integerDatatypes} from "../utils/datatypeMap.js";
+
+
 function resolveCardinality(cardinality: CardinalityInfo) {
   const isRequired = cardinality.required && !cardinality.multiple;
 
@@ -57,6 +61,38 @@ export class PropertyGenerator {
     return !!(prop.class || prop.nodeTerm);
   }
 
+  private getDatatypeEntry(datatype?: string) {
+  const map = datatypeMap as Record<
+    string,
+    (typeof datatypeMap)[keyof typeof datatypeMap]
+  >;
+  return datatype ? map[datatype] : undefined;
+}
+
+  private resolveDatatype(dt?: string) {
+    if (!dt) return this.fallback();
+    
+    const entry = this.getDatatypeEntry(dt);
+    if (entry) return entry;
+
+    if (integerDatatypes.includes(dt)) {
+      return { type: "number", as: "LiteralAs.number", from: "LiteralFrom.number" };
+    }
+    if (numericDatatypes.includes(dt)) {
+      return { type: "number", as: "LiteralAs.number", from: "LiteralFrom.double" };
+    }
+    if (dateDatatypes.includes(dt)) {
+      return { type: "Date", as: "LiteralAs.date", from: "LiteralFrom.date" };
+    }
+    return this.fallback();
+}
+
+  private fallback() {
+    return { type: "string", as: "LiteralAs.string", from: "LiteralFrom.string" };
+  }
+
+
+
   generateProperty(
     prop: ShapePropertyModel,
     imports?: Set<string>,
@@ -84,6 +120,7 @@ export class PropertyGenerator {
     }
 
     const propertyIri = `"${prop.path || prop.codeIdentifier}"`;
+
 
     // ---------------- Nested property (sh:node or sh:class) ----------------
     if (prop.isNested && prop.nestedClassName) {
@@ -133,7 +170,6 @@ export class PropertyGenerator {
       const { getter, setter } = resolveCardinality(prop.cardinality);
       const nestedType = resolveType(codeIdentifier, prop.cardinality);
       
-
       return `
   get ${identifier}(): ${nestedType} {
     return ${getter}(this, ${propertyIri}, TermAs.instance(${codeIdentifier}));
@@ -143,13 +179,14 @@ export class PropertyGenerator {
   }`;
     }
       
-
     // ---------------- Primitive / NamedNode property ----------------
     const isNamedNode = this.isNamedNodeProperty(prop);
 
-    const baseType = this.inferType(prop);
-    const mapping = this.inferMapping(prop, isNamedNode);
-    const termMap = this.termMapping(baseType, prop, isNamedNode);
+    const entry = this.resolveDatatype(prop.datatypeConstraint);
+
+    const baseType = entry.type;
+    const mapping = entry.as;
+    const termMap = entry.from;
 
     if (usage) {
       usage.valueMapping = true;
@@ -194,49 +231,5 @@ export class PropertyGenerator {
   set ${identifier}(value: ${primitiveType}) {
     ${setter}(this, ${propertyIri}, value, ${termMap});
   }`;
-  }
-
-  // ---------------- Type inference ----------------
-  private inferType(prop: ShapePropertyModel): string {
-    if (!prop.datatypeConstraint) return "string";
-    const dt = prop.datatypeConstraint.toLowerCase();
-    if (dt.includes("integer") || dt.includes("decimal")) return "number";
-    if (dt.includes("boolean")) return "boolean";
-    if (dt.includes("date")) return "Date";
-    return "string";
-  }
-
-  // ---------------- Mapping inference ----------------
-  private inferMapping(prop: ShapePropertyModel, isNamedNode: boolean): string {
-    if (!prop.datatypeConstraint) {
-      return isNamedNode ? "NamedNodeAs.string" : "LiteralAs.string";
-    }
-
-    const dt = prop.datatypeConstraint.toLowerCase();
-
-    if (dt.includes("anyuri")) return "LiteralAs.string";
-    if (dt.includes("integer") || dt.includes("decimal")) return "LiteralAs.number";
-    if (dt.includes("boolean")) return "LiteralAs.boolean";
-    if (dt.includes("date")) return "LiteralAs.date";
-
-    return "LiteralAs.string";
-  }
-
-  // ---------------- Term mapping ----------------
-  private termMapping(type: string, prop: ShapePropertyModel, isNamedNode: boolean): string {
-    if (isNamedNode) {
-      return "NamedNodeFrom.string";
-    }
-
-    if (prop.datatypeConstraint?.toLowerCase().includes("anyuri")) {
-      return "LiteralFrom.anyUriString";
-    }
-
-    switch (type) {
-      case "number": return "LiteralFrom.double";
-      case "boolean": return "LiteralFrom.boolean";
-      case "Date": return "LiteralFrom.date";
-      default: return "LiteralFrom.string";
-    }
   }
 }

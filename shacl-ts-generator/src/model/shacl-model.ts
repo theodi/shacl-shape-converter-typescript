@@ -2,26 +2,7 @@ import { DatasetWrapper, LiteralAs, NamedNodeAs, OptionalFrom, RequiredFrom, Set
 import type { CardinalityInfo } from "./cardinality.ts";
 import type { Term } from "@rdfjs/types";
 import { firstNamedNodeInList } from "../utils/rdfListHelpers.js"; 
-
-
-
-export const SHACL = {
-  codeIdentifier: "http://www.w3.org/ns/shacl#codeIdentifier",
-  datatype: "http://www.w3.org/ns/shacl#datatype",
-  minCount: "http://www.w3.org/ns/shacl#minCount",
-  maxCount: "http://www.w3.org/ns/shacl#maxCount",
-  name: "http://www.w3.org/ns/shacl#name",
-  NodeShape: "http://www.w3.org/ns/shacl#NodeShape",
-  path: "http://www.w3.org/ns/shacl#path",
-  property: "http://www.w3.org/ns/shacl#property",
-  node: "http://www.w3.org/ns/shacl#node",
-  class: "http://www.w3.org/ns/shacl#class",
-  value: "http://www.w3.org/ns/shacl#value",
-  inversePath: "http://www.w3.org/ns/shacl#inversePath",
-  in: "http://www.w3.org/ns/shacl#in",
-  and: "http://www.w3.org/ns/shacl#and",
-} as const;
-
+import { SHACL } from "../vocab/shacl.js";
 
 
 function getSubjectTerm(wrapper: TermWrapper): Term | undefined {
