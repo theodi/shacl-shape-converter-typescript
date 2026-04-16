@@ -12,8 +12,10 @@
   ],
   "license": "MIT OR Apache-2.0",
   "scripts": {
-    "test": "node --test",
+    "start": "npm test",
     "build": "tsc",
+    "build:test": "tsc -p test",
+    "test": "npm run build:test && node --test \"dist-test/**/*.test.js\"",
     "prepare": "npm run build"
   },
   "dependencies": {

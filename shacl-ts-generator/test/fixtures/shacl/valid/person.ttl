@@ -1,0 +1,281 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+@prefix telephone_shape:  <https://solidproject.org/shapes/telephone#> .
+@prefix email_shape:  <https://solidproject.org/shapes/email#> .
+@prefix address_shape:  <https://solidproject.org/shapes/address#> .
+
+@prefix person_shape:  <https://solidproject.org/shapes/person#> .
+
+person_shape:ContactDetailsPersonShape a sh:NodeShape ;
+    sh:name "Person Shape" ;
+    sh:description "SHACL shape representing a person" ;
+    sh:targetClass vcard:Individual ;  
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/contacts-pane/blob/main/src/ontology/forms.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/src/ontology/forms.ttl> ;
+    sh:codeIdentifier "ContactDetailsPerson";
+    
+    sh:property [ 
+        sh:path vcard:fn ;
+        sh:name "Full Name" ;
+        sh:datatype xsd:string; 
+        sh:codeIdentifier "fullName";
+        sh:maxCount 1;
+    ];
+
+    sh:property [ 
+        sh:path vcard:role ;
+        sh:name "Role" ;
+        sh:description "The role or job title of the person." ;
+        sh:datatype xsd:string;
+        sh:codeIdentifier "role";
+        sh:maxCount 1;
+    ];
+
+    sh:property [ 
+        sh:path vcard:organization-name ;
+        sh:name "Organization Name" ;
+        sh:description "The organization the person belongs to.";
+        sh:datatype xsd:string; 
+        sh:codeIdentifier "organizationName";
+        sh:maxCount 1;
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasAddress ;
+        sh:node address_shape:AddressShape;
+        sh:name "Address" ;
+        sh:description "Address details" ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:codeIdentifier "address";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasEmail ;
+        sh:node email_shape:EmailWithTypeShape;
+        sh:name "Emails" ;
+        sh:description "Email addresses of the contact." ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:codeIdentifier "email";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasTelephone ;
+        sh:node telephone_shape:TelephoneShape ;
+        sh:name "Telephones" ;
+        sh:description "Telephone numbers of the contact." ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:codeIdentifier "telephone";
+    ];
+
+    sh:property [ 
+        sh:path vcard:bday ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name "Birthday" ;
+        sh:description "Date of birth" ;
+        sh:codeIdentifier "dateOfBirth";
+    ];
+
+    sh:property [ 
+        sh:path vcard:note ;
+        sh:maxCount 1 ;
+        sh:name "Notes" ;
+        sh:description "General notes about the contact." ;
+        sh:datatype xsd:string;
+        sh:codeIdentifier "notes";
+    ];
+    .
+
+person_shape:IssueTrackerPersonShape
+    a sh:NodeShape ;
+    sh:name "Person Shape" ;
+    sh:description "Defines constraints for an individual person in a group." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    dct:referencedBy <https://solidproject.org/shapes/issue-tracker> ;
+    sh:description "Person shape used in issue tracker from core:PersonForm" ;
+    sh:codeIdentifier "IssueTrackerPerson";
+
+
+    sh:property [
+        sh:path vcard:fn ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Person Name" ;
+        sh:description "The human-readable name of the person.";
+        sh:codeIdentifier "fullName";
+        sh:maxCount 1;
+    ] ;
+
+    sh:property [
+        sh:path owl:sameAs ;
+        sh:maxCount 1 ;
+        sh:class vcard:Individual ;
+        sh:name "Solid ID" ;
+        sh:description "The Solid WebID of the person, if available.";
+        sh:codeIdentifier "solidId";
+    ] ;
+
+    sh:property [
+        sh:path vcard:phone ;
+        sh:maxCount 1 ;
+        sh:name "Phone" ;
+        sh:description "Telephone number";
+        sh:codeIdentifier "phone";
+    ] ;
+
+    sh:property [
+        sh:path vcard:email ;
+        sh:maxCount 1 ;
+        sh:name "Email" ;
+        sh:description "Email address";
+        sh:codeIdentifier "emailAddress";
+    ] ;
+    
+    .
+
+
+
+
+
+person_shape:ContactPersonShape a sh:NodeShape ;
+    sh:name "Person Shape" ;
+    sh:description "SHACL shape representing a person" ;
+    sh:targetClass vcard:Individual ;  
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+    sh:codeIdentifier "ContactPerson";
+    
+    sh:property [
+	    sh:path rdf:type ;
+        sh:value vcard:Individual;
+        sh:mincount 1;
+        sh:maxCount 1;
+        sh:codeIdentifier "individual";
+	];
+
+    sh:property [ 
+        sh:path vcard:fn ;
+        sh:pattern ".* .*" ;
+        sh:name "Full Name" ;
+        sh:datatype xsd:string; 
+        sh:codeIdentifier "fullName";
+        sh:minCount 1;
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasUID ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^urn:uuid:" ;
+        sh:codeIdentifier "identifier";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasName ;
+        sh:maxCount 1 ;
+        sh:codeIdentifier "name";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasPhoto ;
+        sh:codeIdentifier "photo";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasRelated ;
+        sh:codeIdentifier "related";
+    ];
+
+    sh:property [ 
+        sh:path vcard:url ;
+        sh:codeIdentifier "url";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasAddress ;
+        sh:codeIdentifier "address";
+    ];
+
+    sh:property [ 
+        sh:path vcard:bday ;
+        sh:datatype xsd:dateTime;
+        sh:maxCount 1;
+        sh:codeIdentifier "dateOfBirth";
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasEmail ;
+        sh:codeIdentifier "email";
+        # source file does not link this to an email shape
+    ];
+
+    sh:property [ 
+        sh:path vcard:hasTelephone;
+        sh:codeIdentifier "telephone";
+    ];
+
+    sh:property [ 
+        sh:path vcard:organization-name ;
+        sh:datatype xsd:string;
+        sh:maxCount 1;
+        sh:codeIdentifier "organizationName";
+    ];
+
+    sh:property [ 
+        sh:path vcard:role ;
+        sh:datatype xsd:string;
+        sh:maxCount 1;
+        sh:name "Role" ;
+        sh:description "The role or job title of the person." ;
+        sh:codeIdentifier "role";
+    ];
+
+    sh:property [ 
+        sh:path vcard:title;
+        sh:datatype xsd:string;
+        sh:maxCount 1;
+        sh:codeIdentifier "title";
+    ];
+
+    sh:property [
+		sh:path vcard:note;
+        sh:datatype xsd:string;
+        sh:maxCount 1;
+        sh:codeIdentifier "notes";
+	];
+
+    sh:property [
+		sh:path owl:sameAs; # Other IDs we have found for this person
+        # But see also webids store as vcard:URI type vcard WebId
+        sh:dataType vcard:Individual;
+        sh:codeIdentifier "sameAs";
+	];
+
+    sh:property [
+		sh:path vcard:inAddressBook; # Must be the same book
+        a sh:BackwardLink;  # Must be stored at least in the book
+        sh:minCount 1;
+        sh:maxCount 1;   
+        sh:codeIdentifier "inAddressBook";
+	] .
+
+
+    
+
+
