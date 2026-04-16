@@ -9,7 +9,7 @@ test("should parse person shape", async (t) => {
 
   const file = path.join(
     process.cwd(),
-    "tests/fixtures/shacl/valid/person.ttl"
+    "test/fixtures/shacl/valid/person.ttl"
   )
 
   // 1️⃣ Check file exists

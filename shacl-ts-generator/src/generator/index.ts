@@ -110,11 +110,11 @@ export async function generateFromShacl(
   // STEP 5: Generate index.ts with class + dataset exports
   // --------------------------------------------------
   const indexCode = shapes
-    .map(s => `export * from "./${s.shape.codeIdentifier}";`)
+    .map(s => `export * from "./${s.shape.codeIdentifier}.js";`)
     .join("\n");
 
   const datasetExports = Array.from(new Set(shapes.map(s => s.prefix)))
-    .map(p => `export * from "./${NamingUtils.pascalCase(p)}Dataset";`)
+    .map(p => `export * from "./${NamingUtils.pascalCase(p)}Dataset.js";`)
     .join("\n");
 
   await fs.writeFile(
