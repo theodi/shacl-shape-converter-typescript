@@ -1,0 +1,65 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix bookmark: <http://www.w3.org/2002/01/bookmark#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+@prefix bookmark_shape: <https://solidproject.org/shapes/bookmark#> .
+
+
+bookmark_shape:BookmarkShape
+    a sh:NodeShape ;
+    sh:targetClass bookmark:Bookmark ;
+    sh:name "Bookmark" ;
+    sh:description "A Bookmark node with label, URL, topic, and description" ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/solid-web-components/blob/main/documentation/data/dashboard-forms.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/solid-web-components/blob/main/documentation/data/dashboard-forms.ttl> ;
+    dct:references <https://www.w3.org/2003/07/Annotea/BookmarkSchema-20030707> ; # references the Annotea Bookmark schema, which defines the bookmark:Bookmark class and its properties    
+    dct:references <http://www.w3.org/2002/01/bookmark#Bookmark> ; # references the bookmark:Bookmark class in the W3C Bookmark vocabulary (the Annotea Bookmark ontology)  
+    sh:description "This shape does not include all properties defined for bookmark:Bookmark in the W3C Bookmark vocabulary (the Annotea Bookmark ontology), but only those relevant to the use case of representing bookmarks on a dashboard" ;
+    sh:codeIdentifier "Bookmark";
+
+    # Label property
+    sh:property [
+        sh:path sh:name ;
+        sh:datatype xsd:string ;
+        sh:name "Label" ;
+        sh:name "Label" ;
+        sh:description "Human-readable name of the bookmark" ;
+        sh:codeIdentifier "label";
+    ] ;
+
+    # URL property
+    sh:property [
+        sh:path bookmark:recalls ;
+        sh:datatype xsd:anyURI ;
+        sh:name "URL" ;
+        sh:name "URL" ;
+        sh:description "The URL that the bookmark points to" ;
+        sh:codeIdentifier "url";
+    ] ;
+
+    # Topic property
+    sh:property [
+        sh:path bookmark:hasTopic ;
+        sh:datatype xsd:string ;
+        sh:name "Topic" ;
+        sh:name "Topic" ;
+        sh:description "Topic or category of the bookmark" ;
+        sh:codeIdentifier "topic";
+    ] ;
+
+    # Description property
+    sh:property [
+        sh:path sh:description ;
+        sh:datatype xsd:string ;
+        sh:name "Description" ;
+        sh:name "Description" ;
+        sh:description "Optional description of the bookmark" ;
+        sh:codeIdentifier "description";
+    ] .

@@ -1,0 +1,97 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+@prefix person_shape: <https://solidproject.org/shapes/person#> . 
+
+@prefix group_shape:  <https://solidproject.org/shapes/group#> .
+
+group_shape:GroupShape
+    a sh:NodeShape ;
+    sh:name "Group Shape" ;
+    sh:description "Defines constraints for a vCard Group including its name and members." ;
+    sh:targetClass vcard:Group ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+    dct:references <https://www.w3.org/2006/vcard/ns#> ; # references the vcard:Group class, which is the expected type of nodes conforming to this shape, as well as the vcard:fn property, which is used to specify the formatted name of the group, and the vcard:member property, which is used to link the group to its members, which are expected to be vCard Individuals    
+    sh:codeIdentifier "Group";
+
+    sh:property [
+        sh:path vcard:fn ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:name "Group Name" ;
+        sh:description "The formatted name of the group.";
+        sh:codeIdentifier "name";
+    ] ;
+
+    sh:property [
+        sh:path vcard:member ;
+        sh:node person_shape:ContactDetailsPersonShape ;
+        sh:name "Group Member" ;
+        sh:description "A member of the group. When the WebID of an agent is known, it MUST be used as the object of this triple so that ACL systems can grant access correctly. The main local identifier in the address book must be linked indirectly using owl:sameAs via the GroupMemberLocalId shape. Additional identifiers may also be linked using owl:sameAs.";
+        sh:codeIdentifier "member";
+    ] 
+    .
+
+group_shape:GroupMemberLocalIdShape
+    a sh:NodeShape ;
+    sh:name "Group Member Local Identifier Shape" ;
+    sh:description "Ensures that a group member's local identifier links to exactly one vCard Individual using owl:sameAs." ;
+    sh:targetObjectsOf vcard:member ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+    dct:references <https://www.w3.org/2006/vcard/ns#> ; # references the vcard:member property, which is used to link a group to its members, and the vcard:Individual class, which is the expected type of those members, as well as the owl:sameAs property, which is used to link the local group member identifier to
+    sh:codeIdentifier "GroupMemberLocalId";
+    
+
+    sh:property [
+        sh:path owl:sameAs ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class vcard:Individual ;
+        sh:name "Same As Individual" ;
+        sh:description "Links the local group member identifier to exactly one vCard Individual resource.";
+        sh:codeIdentifier "sameAsIndividual";
+    ] 
+    .
+
+group_shape:IssueTrackerAssigneeGroupShape
+    a sh:NodeShape ;
+    sh:name "Assignee Group Shape" ;
+    sh:description "Defines constraints for the vCard Group used as an assignee group for issues." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    dct:referencedBy <https://solidproject.org/shapes/issue-tracker> ; 
+    sh:description "Group shape used in issue tracker" ;
+    sh:codeIdentifier "IssueTrackerAssigneeGroup";
+
+    sh:property [
+        sh:path vcard:fn ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Group Name" ;
+        sh:description "The formatted name of the group.";
+        sh:codeIdentifier "name";
+    ] ;
+    sh:property [
+        sh:path vcard:member ;
+        sh:node person_shape:IssueTrackerPersonShape ;
+        sh:name "Group Member" ;
+        sh:description "Each member of the group represented as a vCard Individual.";
+        sh:codeIdentifier "member"; 
+    ] 
+    .
+

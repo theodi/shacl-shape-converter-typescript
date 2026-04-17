@@ -1,0 +1,235 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+@prefix vcard_shape: <https://solidproject.org/shapes/vcard#> .
+
+vcard_shape:VCardShape
+    a sh:NodeShape ;
+    sh:targetClass vcard:VCard ;
+    sh:name "vCard Shape" ;
+    sh:description "RFC 6350 based vCard validation." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dct:references <https://datatracker.ietf.org/doc/html/rfc6350> ;
+    sh:description "This shape validates vCard data according to the structure and properties defined in RFC 6350, ensuring that vCard instances conform to the expected format and constraints." ;
+    sh:codeIdentifier "VCard";
+
+    sh:property [
+        sh:path vcard:fn ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "fullName";
+        sh:codeIdentifier "fullName";
+    ] ;
+
+    sh:property [
+        sh:path vcard:n ;
+        sh:node vcard_shape:NameShape ;
+        sh:nodeKind sh:BlankNode ;
+        sh:name "name";
+        sh:codeIdentifier "name";
+        
+    ] ;
+
+    sh:property [
+        sh:path vcard:hasEmail ;
+        sh:nodeKind sh:IRI ;
+        sh:description "label";
+        sh:codeIdentifier "email";
+    ] ;
+
+    sh:property [
+        sh:path vcard:hasTelephone ;
+        sh:nodeKind sh:IRI ;
+        sh:name "telephone";
+        sh:codeIdentifier "telephone";
+    ] ;
+
+    sh:property [
+        sh:path vcard:hasAddress ;
+        sh:node vcard_shape:AddressShape ;
+        sh:nodeKind sh:BlankNode ;
+        sh:name "address";
+        sh:codeIdentifier "address";
+    ] ;
+
+    sh:property [
+        sh:path vcard:organization-name ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Organization Name";
+        sh:codeIdentifier "organizationName"
+    ] ;
+.
+
+#################################################################
+# Structured Name Shape
+#################################################################
+
+vcard_shape:NameShape
+    a sh:NodeShape ;
+    sh:name "vCard Name Shape" ;
+    sh:description "SHACL shape representing the structured name of a vCard individual." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dct:references <https://datatracker.ietf.org/doc/html/rfc6350> ;
+    sh:description "This shape validates vCard data according to the structure and properties defined in RFC 6350, ensuring that vCard instances conform to the expected format and constraints." ;
+    sh:codeIdentifier "VCardPersonalName";
+
+
+    sh:property [
+        sh:path vcard:family-name ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Family Name";
+        sh:codeIdentifier "familyName";
+    ] ;
+
+    sh:property [
+        sh:path vcard:given-name ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Given Name";
+        sh:codeIdentifier "givenName"
+    ] ;
+
+    sh:property [
+        sh:path vcard:additional-name ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Additional Name";
+        sh:codeIdentifier "additionalName";
+    ] ;
+
+    sh:property [
+        sh:path vcard:honorific-prefix ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "honorificPrefix";
+        sh:codeIdentifier "honorificPrefix";
+    ] ;
+
+    sh:property [
+        sh:path vcard:honorific-suffix ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:description "Honorific Suffix";
+        sh:codeIdentifier "honorificSuffix"
+    ] ;
+.
+
+#################################################################
+# Address Shape
+#################################################################
+
+vcard_shape:AddressShape
+    a sh:NodeShape ;
+    sh:name "vCard Address Shape" ;
+    sh:description "SHACL shape representing the address details of a vCard individual." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dct:references <https://datatracker.ietf.org/doc/html/rfc6350> ;
+    sh:description "This shape validates vCard data according to the structure and properties defined in RFC 6350, ensuring that vCard instances conform to the expected format and constraints." ;
+    sh:codeIdentifier "VCardAddress";
+
+    sh:property [
+        sh:path vcard:street-address ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Street Address";
+        sh:codeIdentifier "streetAddress";
+    ] ;
+
+    sh:property [
+        sh:path vcard:extended-address ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Extended Address";
+        sh:codeIdentifier "extendedAddress";
+    ] ;
+
+    sh:property [
+        sh:path vcard:locality ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Locality";
+        sh:codeIdentifier "locality";
+    ] ;
+
+    sh:property [
+        sh:path vcard:region ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:name "Region";
+        sh:codeIdentifier "region";
+    ] ;
+
+    sh:property [
+        sh:path vcard:postal-code ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:description "Postal Code";
+        sh:codeIdentifier "postalCode";
+    ] ;
+
+    sh:property [
+        sh:path vcard:country-name ;
+        sh:or (
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:string ]
+        ) ;
+        sh:description "Country Name";
+        sh:codeIdentifier "countryName";
+    ] ;
+.
+
+#################################################################
+# Individual Shape
+#################################################################
+
+vcard_shape:VCardIndividualShape
+    a sh:NodeShape ;
+    sh:targetClass vcard:Individual ;
+    sh:name "vCard Individual Shape" ;
+    sh:description "An object representing a single person or entity" ;
+    dct:created "2026-04-13"^^xsd:date ;
+    vs:term_status "testing" ;
+    dct:references <https://www.w3.org/2006/vcard/ns> ;
+    prov:wasDerivedFrom <https://www.w3.org/2006/vcard/ns> ;
+    sh:description "This shape validates vCard Individual data" ;
+    sh:codeIdentifier "Individual";
+    
+    sh:and (
+        vcard_shape:VCardShape
+    )
+
+.
