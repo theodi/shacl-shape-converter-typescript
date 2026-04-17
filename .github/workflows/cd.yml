@@ -45,6 +45,10 @@ jobs:
     needs: [audit, test]
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -55,4 +59,4 @@ jobs:
       - run: npm ci
       - run: npx tsc
 
-      - run: npm publish
+      - run: npm publish --access public
