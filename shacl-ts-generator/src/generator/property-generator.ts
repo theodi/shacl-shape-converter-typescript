@@ -148,7 +148,7 @@ export class PropertyGenerator {
 
         return `
   get ${identifier}(): Set<${codeIdentifier}> {
-    return SetFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance) as unknown as Set<${codeIdentifier}>;
+    return SetFrom.subjectPredicate(this, ${propertyIri}, TermAs.instance(${codeIdentifier}), TermFrom.instance);
   }`;
       }
 
