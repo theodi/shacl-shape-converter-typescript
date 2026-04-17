@@ -41,15 +41,4 @@ jobs:
  #     - run: npm test
       - run: echo "tests temporarily disabled"
 
-  summary:
-    if: always()
-    #needs: [audit, test]
-    needs: [audit]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Summary
-        run: |
-          #if [[ "${{ needs.audit.result }}" != "success" ]] || [[ "${{ needs.test.result }}" != "success" ]] ; then
-          if [[ "${{ needs.audit.result }}" != "success" ]] ; then
-            exit 1
-          fi
+  
