@@ -1,0 +1,22 @@
+@prefix prov: <http://www.w3.org/ns/prov#>.
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+ 
+@prefix software_agent_shape: <https://solidproject.org/shapes/software_agent#> .
+
+software_agent_shape:ContactSoftwareAgentShape
+    a sh:NodeShape ;
+    sh:targetClass prov:SoftwareAgent ;
+    sh:name "Software Agent Shape" ;
+    sh:description "SHACL shape representing a software agent, which can be associated with a vCard contact as an agent that performs actions on behalf of the contact." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/contacts-pane/blob/main/src/ontology/forms.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/src/ontology/forms.ttl> ;
+    sh:codeIdentifier "ScheduleEventSoftwareAgent";
+    .
+

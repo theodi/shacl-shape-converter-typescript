@@ -1,0 +1,104 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix wf:   <http://www.w3.org/2005/01/wf/flow#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+@prefix group_shape: <https://solidproject.org/shapes/group#> .
+
+@prefix issue_tracker_shape:  <https://solidproject.org/shapes/issue_tracker#> .
+
+issue_tracker_shape:IssueTrackerShape
+    a sh:NodeShape ;
+    sh:name "Issue Tracker Configuration Shape" ;
+    sh:description "Defines data constraints for configuring an issue tracker including title, description, workflow states, classification systems, assignment rules, optional forms, and additional properties." ;
+    sh:targetClass wf:Tracker ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    dct:references <https://www.w3.org/2005/01/wf/flow#> ; # references the wf:Tracker class, which is the expected type of an issue tracker configuration node, as well as the wf:description, wf:issueClass, wf:issueCategory, wf:allowSubIssues, wf:propertyList, wf:assigneeGroup, and wf:extrasEntryForm properties, which are used to specify various aspects of the issue tracker configuration such as its description, workflow states, classification systems, assignment rules, optional forms, and additional properties. It also references the vcard:Group class, which is the expected type of the assignee group linked from an issue tracker configuration via the wf:assigneeGroup property.
+    sh:codeIdentifier "IssueTracker";
+
+    sh:property
+        [ sh:path dct:title ;
+          sh:datatype xsd:string ;
+          sh:name "Tracker Title" ;
+          sh:description "The human-readable title of the issue tracker.";
+          sh:codeIdentifier "title";
+          sh:maxCount 1;
+        ],
+        [ sh:path wf:description ;
+          sh:datatype xsd:string ;
+          sh:name "Tracker Description" ;
+          sh:description "A description explaining the purpose or scope of the issue tracker.";
+          sh:codeIdentifier "description";
+          sh:maxCount 1;
+        ],
+        [ sh:path wf:issueClass ;
+          sh:class rdfs:Class ;
+          sh:name "Issue State Class" ;
+          sh:description "The states an issue may be in (e.g., Task).";
+          sh:codeIdentifier "issueState";
+        ],
+        [ sh:path wf:issueCategory ;
+          sh:class rdfs:Class ;
+          sh:name "Issue Category" ;
+          sh:description "Issue category";
+          sh:codeIdentifier "issueCategory";
+        ],
+        [ sh:path wf:allowSubIssues ;
+          sh:maxCount 1 ;
+          sh:datatype xsd:boolean ;
+          sh:name "Allow Sub-Issues?" ;
+          sh:description "Indicates whether issues may contain sub-issues.";
+          sh:codeIdentifier "allowSubIssues";
+        ],
+
+        # Nested propertyList
+        [ sh:path wf:propertyList ;
+          sh:node issue_tracker_shape:PropertyListShape ;
+          sh:name "Additional Properties" ;
+          sh:description "An ordered list of additional properties to display in table views of issues.";
+          sh:codeIdentifier "additionalProperties";
+        ],
+
+        # Nested assignee group
+        [ sh:path wf:assigneeGroup ;
+          sh:node group_shape:IssueTrackerAssigneeGroupShape ;
+          sh:name "Assignee Group" ;
+          sh:description "The contact group from which issues may be assigned to individuals.";
+          sh:codeIdentifier "assigneeGroup";
+        ] 
+        
+        .
+
+################################################################
+# Shape for each property in wf:propertyList
+################################################################
+
+issue_tracker_shape:PropertyListShape
+    a sh:NodeShape ;
+    sh:name "Property List Item Shape" ;
+    sh:description "Defines constraints for each property included in the propertyList of an issue tracker." ;
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/issue-pane/blob/main/src/ontology/trackerSettingsForm.ttl> ;
+    sh:codeIdentifier "PropertyListItem";
+   
+    
+    sh:property [
+        sh:path sh:name ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "Property Name" ;
+        sh:description "The human-readable name of the property.";
+        sh:codeIdentifier "propertyName";
+    ] .
+

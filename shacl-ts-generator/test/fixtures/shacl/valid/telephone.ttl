@@ -1,0 +1,71 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+@prefix telephone_shape: <https://solidproject.org/shapes/telephone#> .
+
+telephone_shape:TelephoneAsIRIShape a sh:NodeShape;
+  sh:targetObjectsOf vcard:hasTelephone;
+  sh:name "Telephone Shape (as IRI)" ;
+  sh:description "SHACL shape for validating telephone numbers associated with a vCard contact, ensuring they are represented as IRIs with the appropriate 'tel:' scheme." ;
+  dct:created "2026-03-12"^^xsd:date ;
+  vs:term_status "testing" ;
+  dc:source <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+  prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/shapes/contacts-shapes.ttl> ;
+  sh:codeIdentifier "TelephoneAsIRI";
+
+  sh:property [
+    sh:path vcard:value;
+    sh:nodeKind sh:IRI;  
+    sh:pattern "^tel:" ;    # starts with tel:
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:codeIdentifier "telephoneNumber";
+  ].
+
+
+
+
+telephone_shape:TelephoneShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf vcard:hasTelephone ;
+    sh:name "Telephone Shape" ;
+    sh:description "SHACL shape for validating telephone numbers associated with a vCard contact, ensuring they conform to expected patterns and classifications." ;  
+    dct:created "2026-03-12"^^xsd:date ;
+    vs:term_status "testing" ;
+    dc:source <https://github.com/SolidOS/contacts-pane/blob/main/src/ontology/forms.ttl> ;
+    prov:wasDerivedFrom <https://github.com/SolidOS/contacts-pane/blob/main/src/ontology/forms.ttl> ;
+    sh:codeIdentifier "Telephone";
+
+    # Phone Type (optional, restricted to vCard types)
+    sh:property [
+        sh:path rdf:type ;
+        sh:maxCount 1 ;
+        sh:in ( vcard:Cell vcard:Home vcard:Work ) ;
+        sh:name "Phone Type" ;
+        sh:description "The classification of the phone (cell, home, work)." ;
+        sh:codeIdentifier "telephoneType";
+    ] ;
+
+    # Phone Number (required)
+    sh:property [
+        sh:path vcard:value ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Phone Number" ;
+        sh:description "The telephone number of the contact." ;
+        sh:codeIdentifier "telephoneNumber";
+    ] .
+
+
+
+
+
+
+             
