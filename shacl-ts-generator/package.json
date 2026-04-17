@@ -1,11 +1,11 @@
 {
   "name": "@theodi/shacl-converter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SHACL → TypeScript Class Generator",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "shacl-converter": "./dist/cli.js"
+    "shacl-converter": "dist/cli.js"
   },
   "files": [
     "dist"
