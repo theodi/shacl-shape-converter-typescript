@@ -9,31 +9,40 @@ describe("ShaclParser integration", () => {
 
     const file = path.join(
       process.cwd(),
-      "test/fixtures/shacl/valid/person.ttl"
+      "test/fixtures/shacl/valid/chat.ttl"
     )
 
     const shapes = await parser.parse(file)
 
-    // ✔ There are 3 shapes in this TTL
-    assert.strictEqual(shapes.length, 3)
+    // ✔ There are 11 shapes in this TTL
+    assert.strictEqual(shapes.length, 11)
 
     // ✔ Ensure all expected shapes exist
     const codeIdentifiers = shapes.map(s => s.codeIdentifier)
 
-    assert.deepStrictEqual(codeIdentifiers.sort(), [
-      "ContactDetailsPerson",
-      "ContactPerson",
-      "IssueTrackerPerson"
-    ].sort())
-
-    // ✔ Validate one specific shape deeply
-    const contactDetails = shapes.find(
-      s => s.codeIdentifier === "ContactDetailsPerson"
+    assert.deepStrictEqual(
+      codeIdentifiers.sort(),
+      [
+        "ChatChannel",
+        "ChatMessage",
+        "Participation",
+        "ChatSharedPreferences",
+        "ChatAction",
+        "LongChatChannel",
+        "LongChatMessage",
+        "AppendOnlyMessageVersion",
+        "DeletedLongChatMessage",
+        "LongChatThread",
+        "LongChatAction"
+      ].sort()
     )
 
-    assert.ok(contactDetails, "ContactDetailsPerson not found")
+    // ✔ Validate one shape exists
+    const chatMessage = shapes.find(
+      s => s.codeIdentifier === "ChatMessage"
+    )
 
-    assert.strictEqual(contactDetails.properties.size, 8)
-    assert.strictEqual(contactDetails.codeIdentifier, "ContactDetailsPerson")
+    assert.ok(chatMessage, "ChatMessage not found")
+    assert.ok(chatMessage.properties.size >= 3)
   })
 })

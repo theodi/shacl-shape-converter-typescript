@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { VCardAddress } from "../../output/VCardAddress.js";
+import { VCardAddress } from "../../fixtures/typescript/VCardAddress.js";
 
 function stringify(addr: VCardAddress) {
   return [...addr.locality].join(",");
