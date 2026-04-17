@@ -5,6 +5,10 @@ on:
     types: [published]
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: shacl-ts-generator
+
 permissions:
   contents: read
   id-token: write  
@@ -31,10 +35,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
+
 
       - run: npm ci
       - run: npx tsc
@@ -46,12 +50,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org/
 
       - run: npm ci
       - run: npx tsc
 
-      - run: npm publish --access public
+      - run: npm publish
