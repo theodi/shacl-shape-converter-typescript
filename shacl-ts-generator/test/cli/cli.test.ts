@@ -16,7 +16,7 @@ test("CLI should generate output files", async () => {
 
   await execa("node", [
     cli,
-    "tests/fixtures/shacl/valid/person.ttl",
+    "test/fixtures/shacl/valid/chat.ttl",
     outputDir
   ])
 
