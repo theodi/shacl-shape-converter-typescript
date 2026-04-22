@@ -37,7 +37,7 @@ export class ClassGenerator {
   generate(shape: ShapeModel): string | undefined {
 
     if (this.isTargetOnlyShape(shape)) {
-      return undefined;
+      // return undefined;
     }
     
     const imports = new Set<string>();
@@ -63,7 +63,7 @@ export class ClassGenerator {
 
     // Skip file if no properties generated
     if (generatedProperties.length === 0) {
-      return undefined;
+    //  return undefined;
     }
 
     const properties = generatedProperties.join("\n");

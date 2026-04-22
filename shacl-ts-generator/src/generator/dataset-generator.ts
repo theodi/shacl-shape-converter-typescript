@@ -37,7 +37,7 @@ export class DatasetGenerator {
       const getters = nodeShapes
         .map(shape => {
           const methodName = shape.codeIdentifier[0].toLowerCase() + shape.codeIdentifier.slice(1);
-          imports.add(`import { ${shape.codeIdentifier} } from "./${shape.codeIdentifier}.js";`);
+          imports.add(`import { ${shape.codeIdentifier} } from "./${shape.codeIdentifier}";`);
 
           // Use full IRI as NamedNode value to avoid import issues in dataset class
           return `  get ${methodName}() {

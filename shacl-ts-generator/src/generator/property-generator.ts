@@ -101,7 +101,7 @@ export class PropertyGenerator {
       if (usage) usage.objectMapping = true;
 
       if (imports) {
-        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}.ts';`);
+        imports.add(`import { ${codeIdentifier} } from './${codeIdentifier}';`);
       }
 
       if (prop.cardinality.multiple) {
