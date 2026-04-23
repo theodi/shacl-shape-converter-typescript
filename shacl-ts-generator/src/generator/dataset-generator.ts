@@ -34,14 +34,19 @@ export class DatasetGenerator {
       const datasetFilePath = path.join(output, `${className}.ts`);
 
       const imports = new Set<string>();
-      const getters = nodeShapes
-        .map(shape => {
-          const methodName = shape.codeIdentifier[0].toLowerCase() + shape.codeIdentifier.slice(1);
-          imports.add(`import { ${shape.codeIdentifier} } from "./${shape.codeIdentifier}.js";`);
 
-          // Use full IRI as NamedNode value to avoid import issues in dataset class
+      const getters = nodeShapes
+        .filter(shape => shape.targetClass) // only include shapes with targetClass
+        .map(shape => {
+          const methodName =
+            shape.codeIdentifier[0].toLowerCase() + shape.codeIdentifier.slice(1);
+
+          imports.add(
+            `import { ${shape.codeIdentifier} } from "./${shape.codeIdentifier}.js";`
+          );
+
           return `  get ${methodName}() {
-    return this.instancesOf("${shape.value}", ${shape.codeIdentifier});
+    return this.instancesOf("${shape.targetClass}", ${shape.codeIdentifier});
   }`;
         })
         .join("\n\n");
