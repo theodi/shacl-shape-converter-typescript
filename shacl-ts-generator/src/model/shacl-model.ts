@@ -149,6 +149,9 @@ export class ShapeModel extends TermWrapper {
     );
   }
 
+  get targetClass(): string | undefined {
+    return OptionalFrom.subjectPredicate(this, SHACL.targetClass, NamedNodeAs.string);
+  }
   
   get extends(): string[] {
   

@@ -13,4 +13,5 @@ export const SHACL = {
   inversePath: "http://www.w3.org/ns/shacl#inversePath",
   in: "http://www.w3.org/ns/shacl#in",
   and: "http://www.w3.org/ns/shacl#and",
+  targetClass: "http://www.w3.org/ns/shacl#targetClass",
 } as const;
